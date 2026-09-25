@@ -1366,54 +1366,332 @@ QuestNeta = function()
         [6] = GetQuestPoint()            
     }
 end
+-------------------------------------------------
+-- SERVICES
+-------------------------------------------------
+local Players           = game:GetService("Players")
+local UserInputService  = game:GetService("UserInputService")
+local TweenService      = game:GetService("TweenService")
+local LocalPlayer       = Players.LocalPlayer
 
--- Robust UI library load (won't crash if HttpGet fails)
-local redzlib
-local success, err = pcall(function()
-  redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
-end)
+-------------------------------------------------
+-- LOAD FLUENT UI (có fallback mirror)
+-------------------------------------------------
+local Fluent, SaveManager, InterfaceManager
 
-if not success or not redzlib then
-  -- Fallback mirror
-  success, err = pcall(function()
-    redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/PlockScripts/WandUI/refs/heads/main/redz-V5-remake/main.luau"))()
-  end)
+local function LoadFluent()
+    local ok, err = pcall(function()
+        Fluent = loadstring(game:HttpGet(
+            "https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"
+        ))()
+        SaveManager = loadstring(game:HttpGet(
+            "https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"
+        ))()
+        InterfaceManager = loadstring(game:HttpGet(
+            "https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"
+        ))()
+    end)
+    return ok, err
 end
 
-if not success or not redzlib then
-  warn("[IdkQqw Script] Failed to load UI library: " .. tostring(err))
-  game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Script Error",
-    Text = "UI Library failed to load. Check console (F9).",
-    Duration = 10
-  })
-  return
+local okLoad, loadErr = LoadFluent()
+if not okLoad then
+    task.wait(2)
+    okLoad, loadErr = LoadFluent()
 end
 
-local Window = redzlib:MakeWindow({
+if not okLoad or not Fluent then
+    warn("[IdkQqw Script] Failed to load Fluent UI: " .. tostring(loadErr))
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Script Error",
+            Text = "Fluent UI failed to load. Check console (F9).",
+            Duration = 10
+        })
+    end)
+    return
+end
+
+-------------------------------------------------
+-- WINDOW
+-------------------------------------------------
+local Window = Fluent:CreateWindow({
+    Title       = "IdkQqw's Project",
+    SubTitle    = "by @Winter Ushanka",
+    TabWidth    = 160,
+    Size        = UDim2.fromOffset(580, 460),
+    Acrylic     = true,
+    Theme       = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl,  -- Giống Redz Minimizer
+})
+
+-------------------------------------------------
+-- TAB MẪU (Bạn thêm nội dung vào đây)
+-------------------------------------------------
+local Tabs = {
+    Main     = Window:AddTab({ Title = "Main",     Icon = "home" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+}
+
+-- Ví dụ nội dung tab
+Tabs.Main:AddSection("Welcome")
+Tabs.Main:AddParagraph({
     Title = "IdkQqw's Project",
-    SubTitle = "by @Winter Ushanka",
-    SaveFolder = "oknaiget.json"
+    Content = "Đây là menu Fluent UI. Bạn có thể thêm Toggle, Slider, Button, Dropdown...",
 })
 
-local Minimizer = Window:NewMinimizer({
-  KeyCode = Enum.KeyCode.LeftControl
+Tabs.Main:AddButton({
+    Title = "Ví dụ Button",
+    Description = "Click để test",
+    Callback = function()
+        Fluent:Notify({
+            Title = "IdkQqw's Project",
+            Content = "Button đã được click!",
+            Duration = 3,
+        })
+    end,
 })
 
-local MobileButton = Minimizer:CreateMobileMinimizer({
-  Image = "rbxassetid://72240005346801",
-  BackgroundColor3 = Color3.fromRGB(0, 255, 254)
-})
-
--- Force show menu + notify
+-------------------------------------------------
+-- SAVE MANAGER + INTERFACE MANAGER
+-------------------------------------------------
 pcall(function()
-  Window:Notify({
-    Title = "Menu Loaded!",
-    Content = "Press LeftControl (PC) or the cyan button (Mobile) to toggle menu.",
-    Duration = 6
-  })
+    SaveManager:SetLibrary(Fluent)
+    InterfaceManager:SetLibrary(Fluent)
+    SaveManager:SetFolder("IdkQqwProject")      -- Thay SaveFolder cũ
+    InterfaceManager:SetFolder("IdkQqwProject")
+    InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+    SaveManager:BuildConfigSection(Tabs.Settings)
 end)
 
+Window:SelectTab(1)
+
+-------------------------------------------------
+-- ✅ MOBILE FLOATING BUTTON (Giống MobileMinimizer cũ)
+-------------------------------------------------
+local FloatingUI = {
+    ScreenGui = nil, MainButton = nil, Label = nil,
+    IsDragging = false, DragStart = nil, StartPos = nil,
+    MenuOpen = true,
+}
+
+local function SetMenuVisible(visible)
+    FloatingUI.MenuOpen = visible
+
+    pcall(function()
+        -- Fluent dùng ScreenGui tên "Fluent" trong CoreGui hoặc PlayerGui
+        local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+        if playerGui then
+            for _, gui in ipairs(playerGui:GetChildren()) do
+                if gui:IsA("ScreenGui") and (gui.Name == "Fluent"
+                    or gui.Name:lower():find("fluent")) then
+                    gui.Enabled = visible
+                end
+            end
+        end
+        local coreGui = game:GetService("CoreGui")
+        for _, gui in ipairs(coreGui:GetChildren()) do
+            if gui:IsA("ScreenGui") and (gui.Name == "Fluent"
+                or gui.Name:lower():find("fluent")) then
+                gui.Enabled = visible
+            end
+        end
+    end)
+
+    -- Fallback: thử tắt MainFrame
+    pcall(function()
+        if Window and Window.MainFrame then
+            if Window.MainFrame.Instance then
+                Window.MainFrame.Instance.Visible = visible
+            elseif Window.MainFrame.SetVisible then
+                Window.MainFrame:SetVisible(visible)
+            end
+        end
+    end)
+
+    if FloatingUI.UpdateVisual then FloatingUI.UpdateVisual() end
+end
+
+local function ToggleMenu()
+    local newState = not FloatingUI.MenuOpen
+    SetMenuVisible(newState)
+    Fluent:Notify({
+        Title = "IdkQqw's Project",
+        Content = newState and "✅ Menu đã MỞ" or "❌ Menu đã ĐÓNG",
+        Duration = 2,
+    })
+end
+
+local function CreateFloatingButton()
+    if FloatingUI.ScreenGui then
+        pcall(function() FloatingUI.ScreenGui:Destroy() end)
+    end
+
+    local sg = Instance.new("ScreenGui")
+    sg.Name = "IdkQqwFloatingUI"
+    sg.ResetOnSpawn = false
+    sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    sg.IgnoreGuiInset = true
+    sg.DisplayOrder = 999999
+
+    local ok = pcall(function()
+        sg.Parent = LocalPlayer:WaitForChild("PlayerGui", 5)
+    end)
+    if not ok or not sg.Parent then
+        pcall(function() sg.Parent = game:GetService("CoreGui") end)
+    end
+
+    -- ✅ Nút chính giống MobileMinimizer cũ
+    local btn = Instance.new("ImageButton")
+    btn.Name = "MainButton"
+    btn.Size = UDim2.fromOffset(50, 50)
+    btn.Position = UDim2.new(0, 20, 0.5, -25)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 255, 254)  -- Giống cũ
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.Image = "rbxassetid://72240005346801"  -- Icon cũ
+    btn.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    btn.ZIndex = 10
+    btn.Parent = sg
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = btn
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(0, 255, 254)
+    stroke.Thickness = 2
+    stroke.Transparency = 0.2
+    stroke.Parent = btn
+
+    -- Label nhỏ hiện trạng thái
+    local label = Instance.new("TextLabel")
+    label.Name = "StatusLabel"
+    label.Size = UDim2.fromOffset(140, 30)
+    label.Position = UDim2.new(1, 10, 0.5, -15)
+    label.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    label.BackgroundTransparency = 0.1
+    label.BorderSizePixel = 0
+    label.Text = "✅ Menu: Đang MỞ"
+    label.TextColor3 = Color3.fromRGB(0, 255, 254)
+    label.TextSize = 12
+    label.Font = Enum.Font.GothamBold
+    label.Visible = false
+    label.Parent = btn
+
+    local labelCorner = Instance.new("UICorner")
+    labelCorner.CornerRadius = UDim.new(0, 6)
+    labelCorner.Parent = label
+
+    FloatingUI.ScreenGui = sg
+    FloatingUI.MainButton = btn
+    FloatingUI.Label = label
+
+    local function UpdateButtonVisual()
+        if FloatingUI.MenuOpen then
+            stroke.Color = Color3.fromRGB(0, 255, 254)
+            btn.BackgroundColor3 = Color3.fromRGB(0, 255, 254)
+            label.Text = "✅ Menu: Đang MỞ"
+            label.TextColor3 = Color3.fromRGB(0, 255, 254)
+        else
+            stroke.Color = Color3.fromRGB(255, 60, 60)
+            btn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+            label.Text = "❌ Menu: Đang ĐÓNG"
+            label.TextColor3 = Color3.fromRGB(255, 150, 150)
+        end
+    end
+
+    FloatingUI.UpdateVisual = UpdateButtonVisual
+    UpdateButtonVisual()
+
+    -- Drag
+    local function OnInputBegan(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            FloatingUI.IsDragging = true
+            FloatingUI.DragStart = input.Position
+            FloatingUI.StartPos = btn.Position
+        end
+    end
+
+    local function OnInputChanged(input)
+        if not FloatingUI.IsDragging then return end
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            local delta = input.Position - FloatingUI.DragStart
+            btn.Position = UDim2.new(
+                FloatingUI.StartPos.X.Scale,
+                FloatingUI.StartPos.X.Offset + delta.X,
+                FloatingUI.StartPos.Y.Scale,
+                FloatingUI.StartPos.Y.Offset + delta.Y
+            )
+        end
+    end
+
+    local function OnInputEnded(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            if FloatingUI.IsDragging then
+                FloatingUI.IsDragging = false
+                if FloatingUI.DragStart then
+                    local delta = input.Position - FloatingUI.DragStart
+                    if delta.Magnitude < 5 then ToggleMenu() end
+                end
+            end
+        end
+    end
+
+    btn.InputBegan:Connect(OnInputBegan)
+    UserInputService.InputChanged:Connect(OnInputChanged)
+    UserInputService.InputEnded:Connect(OnInputEnded)
+
+    btn.MouseEnter:Connect(function()
+        label.Visible = true
+        pcall(function()
+            TweenService:Create(btn, TweenInfo.new(0.15),
+                { Size = UDim2.fromOffset(56, 56) }):Play()
+        end)
+    end)
+
+    btn.MouseLeave:Connect(function()
+        label.Visible = false
+        pcall(function()
+            TweenService:Create(btn, TweenInfo.new(0.15),
+                { Size = UDim2.fromOffset(50, 50) }):Play()
+        end)
+    end)
+
+    print("[IdkQqw] ✅ Floating Button đã tạo!")
+end
+
+CreateFloatingButton()
+
+-------------------------------------------------
+-- NOTIFY KHI LOAD XONG
+-------------------------------------------------
+Fluent:Notify({
+    Title    = "Menu Loaded!",
+    Content  = "Nhấn LeftControl (PC) hoặc nút cyan (Mobile) để bật/tắt menu.",
+    Duration = 6,
+})
+
+-------------------------------------------------
+-- OPTIONAL: Toggle Menu UI trong Settings
+-------------------------------------------------
+Tabs.Settings:AddSection("🎛️ Menu")
+Tabs.Settings:AddButton({
+    Title = "⌨️ Toggle Menu (LeftCtrl)",
+    Description = "Ẩn/hiện menu",
+    Callback = function() ToggleMenu() end,
+})
+Tabs.Settings:AddButton({
+    Title = "🔄 Reset vị trí nút Floating",
+    Callback = function()
+        if FloatingUI.MainButton then
+            FloatingUI.MainButton.Position = UDim2.new(0, 20, 0.5, -25)
+        end
+    end,
+})
 local Tabs = {
     Info = Window:MakeTab({ Title = "Tab Info And Status", Icon = "Info" }),
     Main = Window:MakeTab({ Title = "Tab Farming", Icon = "rbxassetid://7733960981" }),
