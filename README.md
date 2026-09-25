@@ -1,19 +1,16 @@
+print("[IdkQqw Script] Starting... (fixed loading)")
 do
   ply = game.Players
   plr = ply.LocalPlayer
-  Root = plr.Character.HumanoidRootPart
   replicated = game:GetService("ReplicatedStorage")
-  Lv = game.Players.LocalPlayer.Data.Level.Value
   TeleportService = game:GetService("TeleportService")
   TW = game:GetService("TweenService")
   Lighting = game:GetService("Lighting")
   Enemies = workspace.Enemies
   vim1 = game:GetService("VirtualInputManager")
   vim2 = game:GetService("VirtualUser")
-  TeamSelf = plr.Team
   RunSer = game:GetService("RunService")
   Stats = game:GetService("Stats")
-  Energy = plr.Character.Energy.Value
   BringConnections = {}
   BossList = {}
   MaterialList = {}
@@ -28,9 +25,36 @@ do
   Sec = 0.1
   ClickState = 0
   Num_self = 25
+
+  -- Safe wait for character
+  if not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then
+    plr.CharacterAdded:Wait()
+  end
+  Root = plr.Character:WaitForChild("HumanoidRootPart", 15)
+  TeamSelf = plr.Team
+  pcall(function()
+    Lv = plr:FindFirstChild("Data") and plr.Data.Level.Value or 1
+    local energyObj = plr.Character:FindFirstChild("Energy")
+    Energy = energyObj and energyObj.Value or 100
+  end)
 end
 
-repeat local start = plr.PlayerGui:WaitForChild("Main"):WaitForChild("Loading") and game:IsLoaded() wait() until start
+-- Fixed: no longer hangs forever on Loading screen
+do
+  local timeout = tick() + 12
+  while tick() < timeout do
+    local mainGui = plr.PlayerGui:FindFirstChild("Main")
+    if mainGui then
+      local loading = mainGui:FindFirstChild("Loading")
+      if not loading or loading.Visible == false then
+        break
+      end
+    end
+    if game:IsLoaded() then break end
+    task.wait(0.15)
+  end
+end
+task.wait(0.3)
 World1 = game.PlaceId == 2753915549 or game.PlaceId == 85211729168715
 World2 = game.PlaceId == 4442272183 or game.PlaceId == 79091703265657
 World3 = game.PlaceId == 7449423635 or game.PlaceId == 100117331123089
@@ -1343,7 +1367,29 @@ QuestNeta = function()
     }
 end
 
-local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
+-- Robust UI library load (won't crash if HttpGet fails)
+local redzlib
+local success, err = pcall(function()
+  redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
+end)
+
+if not success or not redzlib then
+  -- Fallback mirror
+  success, err = pcall(function()
+    redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/PlockScripts/WandUI/refs/heads/main/redz-V5-remake/main.luau"))()
+  end)
+end
+
+if not success or not redzlib then
+  warn("[IdkQqw Script] Failed to load UI library: " .. tostring(err))
+  game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Script Error",
+    Text = "UI Library failed to load. Check console (F9).",
+    Duration = 10
+  })
+  return
+end
+
 local Window = redzlib:MakeWindow({
     Title = "IdkQqw's Project",
     SubTitle = "by @Winter Ushanka",
@@ -1358,6 +1404,15 @@ local MobileButton = Minimizer:CreateMobileMinimizer({
   Image = "rbxassetid://72240005346801",
   BackgroundColor3 = Color3.fromRGB(0, 255, 254)
 })
+
+-- Force show menu + notify
+pcall(function()
+  Window:Notify({
+    Title = "Menu Loaded!",
+    Content = "Press LeftControl (PC) or the cyan button (Mobile) to toggle menu.",
+    Duration = 6
+  })
+end)
 
 local Tabs = {
     Info = Window:MakeTab({ Title = "Tab Info And Status", Icon = "Info" }),
