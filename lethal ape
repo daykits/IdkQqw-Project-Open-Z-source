@@ -1,31 +1,37 @@
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
 
--- Hàm giả lập nhấn giữ phím trong khoảng thời gian
-local function pressAndHoldKey(keyCode, holdDuration)
-    holdDuration = holdDuration or 0.1 -- Mặc định giữ 0.1 giây
+-- Hàm xử lý 1 ProximityPrompt
+local function fixPrompt(prompt)
+    if prompt:IsA("ProximityPrompt") then
+        -- Bỏ yêu cầu giữ phím
+        pcall(function()
+            prompt.HoldDuration = 0
+        end)
 
-    -- Nhấn phím xuống
-    VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
-
-    -- Giữ phím trong khoảng thời gian
-    if holdDuration > 0 then
-        task.wait(holdDuration)
+        -- Tự động kích hoạt nếu cần (tùy chọn)
+        -- prompt.Triggered:Connect(function() end)
     end
-
-    -- Thả phím
-    VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
 end
 
--- Lắng nghe sự kiện bạn bấm phím tắt (ví dụ: F)
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
+-- Quét toàn bộ ProximityPrompt đang có trong game
+local function scanAllPrompts()
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            fixPrompt(obj)
+        end
+    end
+end
 
-    -- Nhấn F để kích hoạt nhặt đồ
-    if input.KeyCode == Enum.KeyCode.F then
-        print("Đang nhặt vật phẩm...")
-        pressAndHoldKey(Enum.KeyCode.E, 0.1)
+-- Quét lần đầu
+scanAllPrompts()
+
+-- Lắng nghe prompt mới xuất hiện
+Workspace.DescendantAdded:Connect(function(obj)
+    if obj:IsA("ProximityPrompt") then
+        fixPrompt(obj)
     end
 end)
 
-print("Script đã chạy! Bấm F để nhặt vật phẩm.")
+print("[Script] Đã tắt HoldDuration cho mọi ProximityPrompt. Bấm E 1 lần là nhặt được.")
