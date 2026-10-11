@@ -1,6 +1,6 @@
 -- Script Auto Tele to Coordinates
--- Tọa độ mục tiêu từ hình ảnh
-local targetPos = Vector3.new(4712.59, 685.88, -2328.51)
+-- Tọa độ mục tiêu từ hình ảnh mới
+local targetPos = Vector3.new(14065.59, 229.44, -4057.42)
 
 -- Biến trạng thái
 local isTeleporting = false
