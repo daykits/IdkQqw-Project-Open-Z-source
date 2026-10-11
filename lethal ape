@@ -1,37 +1,14 @@
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-
--- Hàm xử lý 1 ProximityPrompt
-local function fixPrompt(prompt)
+local function makeInstant(prompt)
     if prompt:IsA("ProximityPrompt") then
-        -- Bỏ yêu cầu giữ phím
-        pcall(function()
-            prompt.HoldDuration = 0
-        end)
-
-        -- Tự động kích hoạt nếu cần (tùy chọn)
-        -- prompt.Triggered:Connect(function() end)
+        prompt.HoldDuration = 0 -- Đặt thời gian giữ về 0
+        prompt.RequiresLineOfSight = false -- Không cần nhìn thẳng vào vật phẩm
     end
 end
 
--- Quét toàn bộ ProximityPrompt đang có trong game
-local function scanAllPrompts()
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") then
-            fixPrompt(obj)
-        end
-    end
+-- Quét tất cả ProximityPrompt hiện có trong game
+for _, v in ipairs(workspace:GetDescendants()) do
+    makeInstant(v)
 end
 
--- Quét lần đầu
-scanAllPrompts()
-
--- Lắng nghe prompt mới xuất hiện
-Workspace.DescendantAdded:Connect(function(obj)
-    if obj:IsA("ProximityPrompt") then
-        fixPrompt(obj)
-    end
-end)
-
-print("[Script] Đã tắt HoldDuration cho mọi ProximityPrompt. Bấm E 1 lần là nhặt được.")
+-- Tự động áp dụng cho vật phẩm mới xuất hiện sau này
+workspace.DescendantAdded:Connect(makeInstant)
