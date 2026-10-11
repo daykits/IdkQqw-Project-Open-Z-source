@@ -1,14 +1,84 @@
+-- ============================================
+-- AUTO INSTANT PICKUP - LUÔN HOẠT ĐỘNG
+-- ============================================
+
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Bật = true, Tắt = false (có thể đổi từ bên ngoài)
+getgenv().InstantPickup = true
+
+-- Hàm xử lý 1 ProximityPrompt
 local function makeInstant(prompt)
+    if not getgenv().InstantPickup then return end
+    
     if prompt:IsA("ProximityPrompt") then
-        prompt.HoldDuration = 0 -- Đặt thời gian giữ về 0
-        prompt.RequiresLineOfSight = false -- Không cần nhìn thẳng vào vật phẩm
+        pcall(function()
+            prompt.HoldDuration = 0
+            prompt.RequiresLineOfSight = false
+            prompt.MaxActivationDistance = 100 -- Tăng tầm nhặt (tùy chọn)
+        end)
     end
 end
 
--- Quét tất cả ProximityPrompt hiện có trong game
-for _, v in ipairs(workspace:GetDescendants()) do
-    makeInstant(v)
+-- Quét toàn bộ hiện tại
+local function scanAll()
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        makeInstant(obj)
+    end
 end
 
--- Tự động áp dụng cho vật phẩm mới xuất hiện sau này
-workspace.DescendantAdded:Connect(makeInstant)
+-- ============================================
+-- LỚP 1: Quét lần đầu
+-- ============================================
+scanAll()
+
+-- ============================================
+-- LỚP 2: Lắng nghe object mới xuất hiện
+-- ============================================
+Workspace.DescendantAdded:Connect(function(obj)
+    makeInstant(obj)
+end)
+
+-- ============================================
+-- LỚP 3: Phát hiện game thay đổi HoldDuration trở lại
+-- ============================================
+local function watchPrompt(prompt)
+    if prompt:IsA("ProximityPrompt") then
+        prompt:GetPropertyChangedSignal("HoldDuration"):Connect(function()
+            if getgenv().InstantPickup and prompt.HoldDuration ~= 0 then
+                prompt.HoldDuration = 0
+            end
+        end)
+    end
+end
+
+-- Áp dụng lớp 3 cho mọi prompt
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    watchPrompt(obj)
+end
+
+Workspace.DescendantAdded:Connect(watchPrompt)
+
+-- ============================================
+-- LỚP 4: Vòng lặp quét định kỳ (chống mọi trường hợp)
+-- ============================================
+task.spawn(function()
+    while task.wait(1) do
+        if getgenv().InstantPickup then
+            pcall(scanAll)
+        end
+    end
+end)
+
+-- ============================================
+-- LỚP 5: Tự động chạy lại khi respawn
+-- ============================================
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    scanAll()
+end)
+
+print("[InstantPickup] Đã bật! Bấm E 1 lần là nhặt ngay.")
