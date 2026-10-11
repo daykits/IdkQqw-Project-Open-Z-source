@@ -1,5 +1,5 @@
 -- ============================================
--- MENU TELEPORT ĐẾN TỌA ĐỘ CỐ ĐỊNH
+-- MENU TELEPORT + LƠ LỬNG TRÊN CAO
 -- Tọa độ: X=-8.01, Y=973.14, Z=-66.22
 -- ============================================
 
@@ -7,28 +7,114 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 
 -- Tọa độ đích
 local TARGET_POSITION = Vector3.new(-8.01, 973.14, -66.22)
 
+-- Trạng thái lơ lửng
+local floating = false
+local floatConnection = nil
+local originalY = TARGET_POSITION.Y
+
 -- Xóa menu cũ nếu tồn tại
 if CoreGui:FindFirstChild("QuickTeleportMenu") then
     CoreGui.QuickTeleportMenu:Destroy()
 end
 
--- Tạo ScreenGui
+-- ============================================
+-- HÀM LƠ LỬNG (FLOAT)
+-- ============================================
+local function StartFloating()
+    if floating then return end
+    floating = true
+    
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not rootPart or not humanoid then return end
+    
+    -- Tắt trọng lực để không bị rơi
+    humanoid.PlatformStand = true
+    
+    -- Neo giữ nhân vật ở độ cao cố định
+    floatConnection = RunService.Heartbeat:Connect(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        local rp = char:FindFirstChild("HumanoidRootPart")
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not rp or not hum then return end
+        
+        -- Giữ nguyên vị trí X, Z hiện tại, khóa Y ở độ cao mục tiêu
+        local currentPos = rp.Position
+        rp.Velocity = Vector3.new(0, 0, 0)
+        rp.CFrame = CFrame.new(currentPos.X, originalY, currentPos.Z)
+        
+        hum.PlatformStand = true
+    end)
+end
+
+local function StopFloating()
+    if not floating then return end
+    floating = false
+    
+    if floatConnection then
+        floatConnection:Disconnect()
+        floatConnection = nil
+    end
+    
+    local character = LocalPlayer.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = false
+        end
+    end
+end
+
+-- ============================================
+-- HÀM TELEPORT
+-- ============================================
+local function TeleportToTarget()
+    local character = LocalPlayer.Character
+    if not character then
+        warn("Không tìm thấy nhân vật!")
+        return
+    end
+    
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        warn("Không tìm thấy HumanoidRootPart!")
+        return
+    end
+    
+    -- Teleport đến tọa độ
+    rootPart.CFrame = CFrame.new(TARGET_POSITION)
+    rootPart.Velocity = Vector3.new(0, 0, 0)
+    
+    -- Tự động bật lơ lửng sau khi teleport
+    task.wait(0.1)
+    StartFloating()
+end
+
+-- ============================================
+-- TẠO GIAO DIỆN
+-- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "QuickTeleportMenu"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Khung chính (nhỏ gọn)
+-- Khung chính
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 110)
-MainFrame.Position = UDim2.new(0, 20, 0.5, -55)
+MainFrame.Size = UDim2.new(0, 230, 0, 160)
+MainFrame.Position = UDim2.new(0, 20, 0.5, -80)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
 MainFrame.BackgroundTransparency = 0.15
 MainFrame.BorderSizePixel = 0
@@ -44,7 +130,7 @@ Stroke.Thickness = 1.5
 Stroke.Transparency = 0.3
 Stroke.Parent = MainFrame
 
--- Thanh tiêu đề (kéo thả)
+-- Thanh tiêu đề
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 30)
 TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
@@ -55,7 +141,6 @@ local TitleCorner = Instance.new("UICorner")
 TitleCorner.CornerRadius = UDim.new(0, 10)
 TitleCorner.Parent = TitleBar
 
--- Che phần dưới của TitleBar để bo góc trên thôi
 local TitleCover = Instance.new("Frame")
 TitleCover.Size = UDim2.new(1, 0, 0, 15)
 TitleCover.Position = UDim2.new(0, 0, 1, -15)
@@ -65,12 +150,12 @@ TitleCover.Parent = TitleBar
 
 -- Tiêu đề
 local Title = Instance.new("TextLabel")
-Title.Text = "⚡ TELEPORT"
+Title.Text = "⚡ TELEPORT + FLOAT"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
+Title.TextSize = 13
 Title.TextColor3 = Color3.fromRGB(0, 255, 180)
 Title.BackgroundTransparency = 1
-Title.Size = UDim2.new(1, -40, 1, 0)
+Title.Size = UDim2.new(1, -50, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TitleBar
@@ -98,6 +183,7 @@ CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Parent = TitleBar
 
 CloseBtn.MouseButton1Click:Connect(function()
+    StopFloating()
     ScreenGui:Destroy()
 end)
 
@@ -109,18 +195,18 @@ CoordLabel.TextSize = 12
 CoordLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
 CoordLabel.BackgroundTransparency = 1
 CoordLabel.Size = UDim2.new(1, -20, 0, 20)
-CoordLabel.Position = UDim2.new(0, 10, 0, 35)
+CoordLabel.Position = UDim2.new(0, 10, 0, 33)
 CoordLabel.TextXAlignment = Enum.TextXAlignment.Left
 CoordLabel.Parent = MainFrame
 
 -- Nút Teleport
 local TeleportBtn = Instance.new("TextButton")
-TeleportBtn.Size = UDim2.new(1, -20, 0, 35)
-TeleportBtn.Position = UDim2.new(0, 10, 0, 62)
+TeleportBtn.Size = UDim2.new(1, -20, 0, 32)
+TeleportBtn.Position = UDim2.new(0, 10, 0, 58)
 TeleportBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
-TeleportBtn.Text = "🚀 TELEPORT NOW"
+TeleportBtn.Text = "🚀 TELEPORT + FLOAT"
 TeleportBtn.Font = Enum.Font.GothamBold
-TeleportBtn.TextSize = 14
+TeleportBtn.TextSize = 13
 TeleportBtn.TextColor3 = Color3.new(1, 1, 1)
 TeleportBtn.BorderSizePixel = 0
 TeleportBtn.Parent = MainFrame
@@ -129,36 +215,23 @@ local BtnCorner = Instance.new("UICorner")
 BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = TeleportBtn
 
--- Hàm teleport
-local function TeleportToTarget()
-    local character = LocalPlayer.Character
-    if not character then
-        warn("Không tìm thấy nhân vật!")
-        return
-    end
-    
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if not rootPart then
-        warn("Không tìm thấy HumanoidRootPart!")
-        return
-    end
-    
-    -- Teleport trực tiếp
-    rootPart.CFrame = CFrame.new(TARGET_POSITION)
-    
-    -- Hiệu ứng thông báo
-    TeleportBtn.Text = "✅ ĐÃ TELEPORT!"
-    TeleportBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-    
-    task.delay(1.5, function()
-        if TeleportBtn and TeleportBtn.Parent then
-            TeleportBtn.Text = "🚀 TELEPORT NOW"
-            TeleportBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
-        end
-    end)
-end
+-- Nút bật/tắt lơ lửng thủ công
+local FloatBtn = Instance.new("TextButton")
+FloatBtn.Size = UDim2.new(1, -20, 0, 32)
+FloatBtn.Position = UDim2.new(0, 10, 0, 98)
+FloatBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
+FloatBtn.Text = "🪂 FLOAT: OFF"
+FloatBtn.Font = Enum.Font.GothamBold
+FloatBtn.TextSize = 13
+FloatBtn.TextColor3 = Color3.new(1, 1, 1)
+FloatBtn.BorderSizePixel = 0
+FloatBtn.Parent = MainFrame
 
--- Hiệu ứng hover
+local FloatCorner = Instance.new("UICorner")
+FloatCorner.CornerRadius = UDim.new(0, 8)
+FloatCorner.Parent = FloatBtn
+
+-- Hiệu ứng hover Teleport
 TeleportBtn.MouseEnter:Connect(function()
     TweenService:Create(TeleportBtn, TweenInfo.new(0.2), {
         BackgroundColor3 = Color3.fromRGB(0, 200, 130)
@@ -171,7 +244,42 @@ TeleportBtn.MouseLeave:Connect(function()
     }):Play()
 end)
 
-TeleportBtn.MouseButton1Click:Connect(TeleportToTarget)
+-- Xử lý nút Teleport
+TeleportBtn.MouseButton1Click:Connect(function()
+    TeleportToTarget()
+    TeleportBtn.Text = "✅ ĐÃ TELEPORT + FLOAT!"
+    task.delay(1.5, function()
+        if TeleportBtn and TeleportBtn.Parent then
+            TeleportBtn.Text = "🚀 TELEPORT + FLOAT"
+        end
+    end)
+    -- Cập nhật nút Float
+    FloatBtn.Text = "🪂 FLOAT: ON"
+    FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+end)
+
+-- Xử lý nút Float
+FloatBtn.MouseButton1Click:Connect(function()
+    if floating then
+        StopFloating()
+        FloatBtn.Text = "🪂 FLOAT: OFF"
+        FloatBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
+    else
+        -- Nếu chưa ở tọa độ, teleport trước
+        local character = LocalPlayer.Character
+        local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            local dist = (rootPart.Position - TARGET_POSITION).Magnitude
+            if dist > 50 then
+                rootPart.CFrame = CFrame.new(TARGET_POSITION)
+                task.wait(0.1)
+            end
+        end
+        StartFloating()
+        FloatBtn.Text = "🪂 FLOAT: ON"
+        FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    end
+end)
 
 -- === Kéo thả menu ===
 local dragging = false
@@ -210,25 +318,54 @@ local minimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
     if minimized then
-        MainFrame.Size = UDim2.new(0, 220, 0, 30)
+        MainFrame.Size = UDim2.new(0, 230, 0, 30)
         CoordLabel.Visible = false
         TeleportBtn.Visible = false
+        FloatBtn.Visible = false
         MinimizeBtn.Text = "+"
     else
-        MainFrame.Size = UDim2.new(0, 220, 0, 110)
+        MainFrame.Size = UDim2.new(0, 230, 0, 160)
         CoordLabel.Visible = true
         TeleportBtn.Visible = true
+        FloatBtn.Visible = true
         MinimizeBtn.Text = "—"
     end
 end)
 
--- Phím tắt: nhấn T để teleport nhanh
+-- Phím tắt: T = teleport + float, F = bật/tắt float
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
+    
     if input.KeyCode == Enum.KeyCode.T then
         TeleportToTarget()
+        FloatBtn.Text = "🪂 FLOAT: ON"
+        FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    elseif input.KeyCode == Enum.KeyCode.F then
+        if floating then
+            StopFloating()
+            FloatBtn.Text = "🪂 FLOAT: OFF"
+            FloatBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
+        else
+            StartFloating()
+            FloatBtn.Text = "🪂 FLOAT: ON"
+            FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+        end
     end
 end)
 
-print("✅ Menu Teleport đã tải! Tọa độ: X=-8.01, Y=973.14, Z=-66.22")
-print("💡 Nhấn T để teleport nhanh, hoặc bấm nút trong menu.")
+-- Tự động reset khi nhân vật hồi sinh
+LocalPlayer.CharacterAdded:Connect(function()
+    if floating then
+        floating = false
+        if floatConnection then
+            floatConnection:Disconnect()
+            floatConnection = nil
+        end
+        task.wait(1)
+        StartFloating()
+    end
+end)
+
+print("✅ Menu Teleport + Float đã tải!")
+print("💡 Nhấn T = Teleport + Float | F = Bật/tắt lơ lửng")
+print("📍 Tọa độ: X=-8.01, Y=973.14, Z=-66.22")
