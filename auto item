@@ -1,70 +1,54 @@
 -- ============================================
--- AUTO INSTANT PICKUP - LUÔN HOẠT ĐỘNG
+-- AUTO PRESS E + INSTANT PICKUP - MỌI LÚC MỌI NƠI
 -- ============================================
 
-local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
+local Workspace        = game:GetService("Workspace")
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local VirtualInput    = game:GetService("VirtualInputManager")
+local LocalPlayer      = Players.LocalPlayer
 
--- Bật = true, Tắt = false (có thể đổi từ bên ngoài)
-getgenv().InstantPickup = true
+-- Bật = true, Tắt = false
+getgenv().InstantPickup   = true   -- đặt HoldDuration = 0
+getgenv().AutoPressE      = true   -- tự động nhấn E
+getgenv().AutoPressDelay  = 0.05   -- khoảng nghỉ giữa các lần nhấn
+getgenv().AutoPressRadius = 15     -- tầm quét (studs)
 
--- Hàm xử lý 1 ProximityPrompt
+-- ============================================
+-- PHẦN 1: ĐẶT HoldDuration = 0 CHO MỌI PROMPT
+-- ============================================
+
 local function makeInstant(prompt)
     if not getgenv().InstantPickup then return end
-    
     if prompt:IsA("ProximityPrompt") then
         pcall(function()
-            prompt.HoldDuration = 0
-            prompt.RequiresLineOfSight = false
-            prompt.MaxActivationDistance = 100 -- Tăng tầm nhặt (tùy chọn)
+            prompt.HoldDuration         = 0
+            prompt.RequiresLineOfSight  = false
         end)
     end
 end
 
--- Quét toàn bộ hiện tại
 local function scanAll()
     for _, obj in ipairs(Workspace:GetDescendants()) do
         makeInstant(obj)
     end
 end
 
--- ============================================
--- LỚP 1: Quét lần đầu
--- ============================================
 scanAll()
 
--- ============================================
--- LỚP 2: Lắng nghe object mới xuất hiện
--- ============================================
 Workspace.DescendantAdded:Connect(function(obj)
     makeInstant(obj)
-end)
-
--- ============================================
--- LỚP 3: Phát hiện game thay đổi HoldDuration trở lại
--- ============================================
-local function watchPrompt(prompt)
-    if prompt:IsA("ProximityPrompt") then
-        prompt:GetPropertyChangedSignal("HoldDuration"):Connect(function()
-            if getgenv().InstantPickup and prompt.HoldDuration ~= 0 then
-                prompt.HoldDuration = 0
+    if obj:IsA("ProximityPrompt") then
+        -- Theo dõi nếu game cố tình đổi lại HoldDuration
+        obj:GetPropertyChangedSignal("HoldDuration"):Connect(function()
+            if getgenv().InstantPickup and obj.HoldDuration ~= 0 then
+                obj.HoldDuration = 0
             end
         end)
     end
-end
+end)
 
--- Áp dụng lớp 3 cho mọi prompt
-for _, obj in ipairs(Workspace:GetDescendants()) do
-    watchPrompt(obj)
-end
-
-Workspace.DescendantAdded:Connect(watchPrompt)
-
--- ============================================
--- LỚP 4: Vòng lặp quét định kỳ (chống mọi trường hợp)
--- ============================================
+-- Vòng lặp quét định kỳ (chống miss)
 task.spawn(function()
     while task.wait(1) do
         if getgenv().InstantPickup then
@@ -73,12 +57,93 @@ task.spawn(function()
     end
 end)
 
--- ============================================
--- LỚP 5: Tự động chạy lại khi respawn
--- ============================================
 LocalPlayer.CharacterAdded:Connect(function()
     task.wait(1)
     scanAll()
 end)
 
-print("[InstantPickup] Đã bật! Bấm E 1 lần là nhặt ngay.")
+-- ============================================
+-- PHẦN 2: AUTO NHẤN E MỌI LÚC MỌI NƠI
+-- ============================================
+
+-- Hàm nhấn E 1 lần
+local function pressE()
+    pcall(function()
+        VirtualInput:SendKeyEvent(true,  Enum.KeyCode.E, false, game)
+        task.wait(0.02)
+        VirtualInput:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+    end)
+end
+
+-- Hàm kích hoạt prompt trực tiếp (không cần bấm E)
+local function firePrompt(prompt)
+    pcall(function()
+        if fireproximityprompt then
+            fireproximityprompt(prompt)
+        elseif prompt and prompt.Triggered then
+            prompt:InputHoldBegin()  -- nếu game dùng InputHold
+        end
+    end)
+end
+
+-- Vòng lặp auto nhấn E + auto fire prompt
+task.spawn(function()
+    while task.wait(getgenv().AutoPressDelay) do
+        if not getgenv().AutoPressE then continue end
+
+        local char = LocalPlayer.Character
+        if not char then continue end
+
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if not root then continue end
+
+        -- Quét mọi ProximityPrompt trong game
+        for _, prompt in ipairs(Workspace:GetDescendants()) do
+            if prompt:IsA("ProximityPrompt") then
+                pcall(function()
+                    local parent = prompt.Parent
+                    if parent and parent:IsA("BasePart") then
+                        local dist = (parent.Position - root.Position).Magnitude
+                        if dist <= getgenv().AutoPressRadius then
+                            -- Cách 1: nhấn E
+                            pressE()
+                            -- Cách 2: kích hoạt trực tiếp (dự phòng)
+                            firePrompt(prompt)
+                        end
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+-- ============================================
+-- PHẦN 3: BẮT MỌI PROMPT MỚI XUẤT HIỆN GẦN MÌNH
+-- ============================================
+
+Workspace.DescendantAdded:Connect(function(obj)
+    if obj:IsA("ProximityPrompt") and getgenv().AutoPressE then
+        task.spawn(function()
+            -- Thử kích hoạt ngay khi prompt xuất hiện
+            task.wait(0.1)
+            firePrompt(obj)
+        end)
+    end
+end)
+
+-- ============================================
+-- PHẦN 4: LẮNG NGHE PHÍM TẮT BẬT/TẮT
+-- ============================================
+
+local UserInput = game:GetService("UserInputService")
+UserInput.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    -- Bấm phím RightControl để bật/tắt auto E
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        getgenv().AutoPressE = not getgenv().AutoPressE
+        print("[AutoPressE] " .. (getgenv().AutoPressE and "BẬT" or "TẮT"))
+    end
+end)
+
+print("[InstantPickup] Đã bật! Auto nhấn E mọi lúc mọi nơi.")
+print("Bấm RightCtrl để bật/tắt Auto E.")
