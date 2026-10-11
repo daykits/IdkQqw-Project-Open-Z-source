@@ -1,0 +1,132 @@
+-- Script Auto Tele to Coordinates
+-- Tọa độ mục tiêu từ hình ảnh
+local targetPos = Vector3.new(4712.59, 685.88, -2328.51)
+
+-- Biến trạng thái
+local isTeleporting = false
+local teleportConnection = nil
+
+-- Tạo GUI nhỏ gọn
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AutoTeleGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
+
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 200, 0, 100)
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -50)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+MainFrame.BackgroundTransparency = 0.2
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true -- Cho phép kéo thả
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 8)
+TitleCorner.Parent = TitleBar
+
+-- Title Text
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, 0, 1, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "⚡ Auto Teleport"
+TitleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 14
+TitleLabel.Parent = TitleBar
+
+-- Coordinate Display
+local CoordLabel = Instance.new("TextLabel")
+CoordLabel.Size = UDim2.new(1, -20, 0, 30)
+CoordLabel.Position = UDim2.new(0, 10, 0, 35)
+CoordLabel.BackgroundTransparency = 1
+CoordLabel.Text = string.format("X: %.2f | Y: %.2f | Z: %.2f", targetPos.X, targetPos.Y, targetPos.Z)
+CoordLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+CoordLabel.Font = Enum.Font.Gotham
+CoordLabel.TextSize = 11
+CoordLabel.TextXAlignment = Enum.TextXAlignment.Left
+CoordLabel.Parent = MainFrame
+
+-- Toggle Button
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 80, 0, 30)
+ToggleButton.Position = UDim2.new(0.5, -40, 0, 65)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+ToggleButton.Text = "OFF"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 14
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Parent = MainFrame
+
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0, 6)
+ButtonCorner.Parent = ToggleButton
+
+-- Hàm teleport
+local function TeleportToTarget()
+    local character = game.Players.LocalPlayer.Character
+    if character then
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            rootPart.CFrame = CFrame.new(targetPos)
+        end
+    end
+end
+
+-- Hàm bật/tắt teleport
+local function ToggleTeleport()
+    isTeleporting = not isTeleporting
+    
+    if isTeleporting then
+        -- Cập nhật giao diện
+        ToggleButton.Text = "ON"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
+        
+        -- Bắt đầu teleport liên tục (mỗi frame)
+        if teleportConnection then
+            teleportConnection:Disconnect()
+        end
+        
+        teleportConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if isTeleporting then
+                TeleportToTarget()
+            end
+        end)
+        
+        print("Auto Teleport: ON")
+    else
+        -- Cập nhật giao diện
+        ToggleButton.Text = "OFF"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+        
+        -- Dừng teleport
+        if teleportConnection then
+            teleportConnection:Disconnect()
+            teleportConnection = nil
+        end
+        
+        print("Auto Teleport: OFF")
+    end
+end
+
+-- Gán sự kiện cho nút
+ToggleButton.MouseButton1Click:Connect(ToggleTeleport)
+
+-- Thông báo khi load thành công
+print("✅ Auto Teleport Script Loaded!")
+print(string.format("📍 Target: X: %.2f, Y: %.2f, Z: %.2f", targetPos.X, targetPos.Y, targetPos.Z))
+print("🔘 Nhấn nút ON/OFF để bật/tắt teleport.")
