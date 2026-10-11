@@ -1,1 +1,234 @@
+-- ============================================
+-- MENU TELEPORT ĐẾN TỌA ĐỘ CỐ ĐỊNH
+-- Tọa độ: X=-8.01, Y=973.14, Z=-66.22
+-- ============================================
 
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Tọa độ đích
+local TARGET_POSITION = Vector3.new(-8.01, 973.14, -66.22)
+
+-- Xóa menu cũ nếu tồn tại
+if CoreGui:FindFirstChild("QuickTeleportMenu") then
+    CoreGui.QuickTeleportMenu:Destroy()
+end
+
+-- Tạo ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "QuickTeleportMenu"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Khung chính (nhỏ gọn)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 220, 0, 110)
+MainFrame.Position = UDim2.new(0, 20, 0.5, -55)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+MainFrame.BackgroundTransparency = 0.15
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 10)
+Corner.Parent = MainFrame
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(0, 200, 150)
+Stroke.Thickness = 1.5
+Stroke.Transparency = 0.3
+Stroke.Parent = MainFrame
+
+-- Thanh tiêu đề (kéo thả)
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = TitleBar
+
+-- Che phần dưới của TitleBar để bo góc trên thôi
+local TitleCover = Instance.new("Frame")
+TitleCover.Size = UDim2.new(1, 0, 0, 15)
+TitleCover.Position = UDim2.new(0, 0, 1, -15)
+TitleCover.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+TitleCover.BorderSizePixel = 0
+TitleCover.Parent = TitleBar
+
+-- Tiêu đề
+local Title = Instance.new("TextLabel")
+Title.Text = "⚡ TELEPORT"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.TextColor3 = Color3.fromRGB(0, 255, 180)
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, -40, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TitleBar
+
+-- Nút thu nhỏ
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
+MinimizeBtn.Position = UDim2.new(1, -45, 0.5, -10)
+MinimizeBtn.BackgroundTransparency = 1
+MinimizeBtn.Text = "—"
+MinimizeBtn.TextSize = 14
+MinimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.Parent = TitleBar
+
+-- Nút đóng
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.Position = UDim2.new(1, -25, 0.5, -10)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "✕"
+CloseBtn.TextSize = 12
+CloseBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Parent = TitleBar
+
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- Hiển thị tọa độ
+local CoordLabel = Instance.new("TextLabel")
+CoordLabel.Text = string.format("X: %.2f | Y: %.2f | Z: %.2f", TARGET_POSITION.X, TARGET_POSITION.Y, TARGET_POSITION.Z)
+CoordLabel.Font = Enum.Font.Code
+CoordLabel.TextSize = 12
+CoordLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
+CoordLabel.BackgroundTransparency = 1
+CoordLabel.Size = UDim2.new(1, -20, 0, 20)
+CoordLabel.Position = UDim2.new(0, 10, 0, 35)
+CoordLabel.TextXAlignment = Enum.TextXAlignment.Left
+CoordLabel.Parent = MainFrame
+
+-- Nút Teleport
+local TeleportBtn = Instance.new("TextButton")
+TeleportBtn.Size = UDim2.new(1, -20, 0, 35)
+TeleportBtn.Position = UDim2.new(0, 10, 0, 62)
+TeleportBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+TeleportBtn.Text = "🚀 TELEPORT NOW"
+TeleportBtn.Font = Enum.Font.GothamBold
+TeleportBtn.TextSize = 14
+TeleportBtn.TextColor3 = Color3.new(1, 1, 1)
+TeleportBtn.BorderSizePixel = 0
+TeleportBtn.Parent = MainFrame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 8)
+BtnCorner.Parent = TeleportBtn
+
+-- Hàm teleport
+local function TeleportToTarget()
+    local character = LocalPlayer.Character
+    if not character then
+        warn("Không tìm thấy nhân vật!")
+        return
+    end
+    
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        warn("Không tìm thấy HumanoidRootPart!")
+        return
+    end
+    
+    -- Teleport trực tiếp
+    rootPart.CFrame = CFrame.new(TARGET_POSITION)
+    
+    -- Hiệu ứng thông báo
+    TeleportBtn.Text = "✅ ĐÃ TELEPORT!"
+    TeleportBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+    
+    task.delay(1.5, function()
+        if TeleportBtn and TeleportBtn.Parent then
+            TeleportBtn.Text = "🚀 TELEPORT NOW"
+            TeleportBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+        end
+    end)
+end
+
+-- Hiệu ứng hover
+TeleportBtn.MouseEnter:Connect(function()
+    TweenService:Create(TeleportBtn, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(0, 200, 130)
+    }):Play()
+end)
+
+TeleportBtn.MouseLeave:Connect(function()
+    TweenService:Create(TeleportBtn, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+    }):Play()
+end)
+
+TeleportBtn.MouseButton1Click:Connect(TeleportToTarget)
+
+-- === Kéo thả menu ===
+local dragging = false
+local dragStart, startPos
+
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement 
+    or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- === Thu nhỏ / Mở rộng ===
+local minimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        MainFrame.Size = UDim2.new(0, 220, 0, 30)
+        CoordLabel.Visible = false
+        TeleportBtn.Visible = false
+        MinimizeBtn.Text = "+"
+    else
+        MainFrame.Size = UDim2.new(0, 220, 0, 110)
+        CoordLabel.Visible = true
+        TeleportBtn.Visible = true
+        MinimizeBtn.Text = "—"
+    end
+end)
+
+-- Phím tắt: nhấn T để teleport nhanh
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.T then
+        TeleportToTarget()
+    end
+end)
+
+print("✅ Menu Teleport đã tải! Tọa độ: X=-8.01, Y=973.14, Z=-66.22")
+print("💡 Nhấn T để teleport nhanh, hoặc bấm nút trong menu.")
