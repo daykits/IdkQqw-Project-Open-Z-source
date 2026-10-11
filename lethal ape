@@ -1,0 +1,31 @@
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local UserInputService = game:GetService("UserInputService")
+
+-- Hàm giả lập nhấn giữ phím trong khoảng thời gian
+local function pressAndHoldKey(keyCode, holdDuration)
+    holdDuration = holdDuration or 0.1 -- Mặc định giữ 0.1 giây
+
+    -- Nhấn phím xuống
+    VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+
+    -- Giữ phím trong khoảng thời gian
+    if holdDuration > 0 then
+        task.wait(holdDuration)
+    end
+
+    -- Thả phím
+    VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+end
+
+-- Lắng nghe sự kiện bạn bấm phím tắt (ví dụ: F)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    -- Nhấn F để kích hoạt nhặt đồ
+    if input.KeyCode == Enum.KeyCode.F then
+        print("Đang nhặt vật phẩm...")
+        pressAndHoldKey(Enum.KeyCode.E, 0.1)
+    end
+end)
+
+print("Script đã chạy! Bấm F để nhặt vật phẩm.")
