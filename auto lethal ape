@@ -1,0 +1,244 @@
+-- ============================================
+-- RAYFIELD UI - AUTO TELE + PRESS E
+-- ============================================
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Players         = game:GetService("Players")
+local VirtualInput    = game:GetService("VirtualInputManager")
+local LocalPlayer     = Players.LocalPlayer
+local Workspace       = game:GetService("Workspace")
+
+-- Tọa độ mục tiêu (bạn có thể chỉnh trong UI)
+getgenv().TargetPos = Vector3.new(-735.97, 273.27, -0.65)
+getgenv().AutoPressE = true
+getgenv().AutoTele   = false
+getgenv().AutoLoop   = false
+getgenv().DelayE     = 0.1
+
+-- ============================================
+-- HÀM TELEPORT
+-- ============================================
+local function teleportTo(pos)
+    local char = LocalPlayer.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    root.CFrame = CFrame.new(pos)
+    root.Velocity = Vector3.zero
+end
+
+-- ============================================
+-- HÀM NHẤN E
+-- ============================================
+local function pressE()
+    pcall(function()
+        VirtualInput:SendKeyEvent(true,  Enum.KeyCode.E, false, game)
+        task.wait(0.02)
+        VirtualInput:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+    end)
+end
+
+-- ============================================
+-- TẠO UI
+-- ============================================
+local Window = Rayfield:CreateWindow({
+    Name        = "Auto Tele + Press E",
+    LoadingTitle = "Đang tải script...",
+    LoadingSubtitle = "by bạn",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "AutoTeleE",
+        FileName = "config"
+    },
+    KeySystem = false
+})
+
+-- ============================================
+-- TAB 1: MAIN
+-- ============================================
+local MainTab = Window:CreateTab("Main", 4483362458)
+
+MainTab:CreateSection("Tọa độ mục tiêu")
+
+-- Input tọa độ X
+MainTab:CreateInput({
+    Name = "Tọa độ X",
+    CurrentValue = "-735.97",
+    PlaceholderText = "Nhập X",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(text)
+        local x = tonumber(text)
+        if x then
+            getgenv().TargetPos = Vector3.new(x, getgenv().TargetPos.Y, getgenv().TargetPos.Z)
+        end
+    end
+})
+
+-- Input tọa độ Y
+MainTab:CreateInput({
+    Name = "Tọa độ Y",
+    CurrentValue = "273.27",
+    PlaceholderText = "Nhập Y",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(text)
+        local y = tonumber(text)
+        if y then
+            getgenv().TargetPos = Vector3.new(getgenv().TargetPos.X, y, getgenv().TargetPos.Z)
+        end
+    end
+})
+
+-- Input tọa độ Z
+MainTab:CreateInput({
+    Name = "Tọa độ Z",
+    CurrentValue = "-0.65",
+    PlaceholderText = "Nhập Z",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(text)
+        local z = tonumber(text)
+        if z then
+            getgenv().TargetPos = Vector3.new(getgenv().TargetPos.X, getgenv().TargetPos.Y, z)
+        end
+    end
+})
+
+MainTab:CreateSection("Hành động")
+
+-- Nút teleport 1 lần
+MainTab:CreateButton({
+    Name = "Tele đến tọa độ",
+    Callback = function()
+        teleportTo(getgenv().TargetPos)
+        Rayfield:Notify({
+            Title = "Đã tele",
+            Content = string.format("Đến (%.2f, %.2f, %.2f)", 
+                getgenv().TargetPos.X, getgenv().TargetPos.Y, getgenv().TargetPos.Z),
+            Duration = 3
+        })
+    end
+})
+
+-- Nút tele + bấm E 1 lần
+MainTab:CreateButton({
+    Name = "Tele + Bấm E ngay",
+    Callback = function()
+        teleportTo(getgenv().TargetPos)
+        task.wait(0.2)
+        pressE()
+        Rayfield:Notify({
+            Title = "Đã tele + bấm E",
+            Content = "Hoàn tất",
+            Duration = 3
+        })
+    end
+})
+
+-- Toggle auto tele liên tục
+MainTab:CreateToggle({
+    Name = "Auto Tele liên tục",
+    CurrentValue = false,
+    Flag = "AutoTeleToggle",
+    Callback = function(value)
+        getgenv().AutoTele = value
+    end
+})
+
+-- Toggle auto bấm E
+MainTab:CreateToggle({
+    Name = "Auto bấm E liên tục",
+    CurrentValue = true,
+    Flag = "AutoEToggle",
+    Callback = function(value)
+        getgenv().AutoPressE = value
+    end
+})
+
+-- Slider delay bấm E
+MainTab:CreateSlider({
+    Name = "Delay bấm E (giây)",
+    Range = {0.02, 1},
+    Increment = 0.02,
+    Suffix = "s",
+    CurrentValue = 0.1,
+    Flag = "DelayE",
+    Callback = function(value)
+        getgenv().DelayE = value
+    end
+})
+
+-- Toggle loop tự động (tele + E liên tục)
+MainTab:CreateToggle({
+    Name = "Auto Loop (Tele + E liên tục)",
+    CurrentValue = false,
+    Flag = "AutoLoop",
+    Callback = function(value)
+        getgenv().AutoLoop = value
+    end
+})
+
+-- Nút lấy tọa độ hiện tại
+MainTab:CreateButton({
+    Name = "Lấy tọa độ hiện tại",
+    Callback = function()
+        local char = LocalPlayer.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        if root then
+            getgenv().TargetPos = root.Position
+            Rayfield:Notify({
+                Title = "Đã lấy tọa độ",
+                Content = string.format("(%.2f, %.2f, %.2f)", 
+                    root.Position.X, root.Position.Y, root.Position.Z),
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- ============================================
+-- VÒNG LẶP AUTO TELE
+-- ============================================
+task.spawn(function()
+    while task.wait(0.1) do
+        if getgenv().AutoTele or getgenv().AutoLoop then
+            pcall(function()
+                teleportTo(getgenv().TargetPos)
+            end)
+        end
+    end
+end)
+
+-- ============================================
+-- VÒNG LẶP AUTO BẤM E
+-- ============================================
+task.spawn(function()
+    while task.wait(getgenv().DelayE or 0.1) do
+        if getgenv().AutoPressE or getgenv().AutoLoop then
+            pcall(pressE)
+        end
+    end
+end)
+
+-- ============================================
+-- VÒNG LẶP AUTO LOOP (TELE + E)
+-- ============================================
+task.spawn(function()
+    while task.wait(0.5) do
+        if getgenv().AutoLoop then
+            pcall(function()
+                teleportTo(getgenv().TargetPos)
+                task.wait(0.2)
+                pressE()
+            end)
+        end
+    end
+end)
+
+-- ============================================
+-- THÔNG BÁO
+-- ============================================
+Rayfield:Notify({
+    Title = "Script đã chạy",
+    Content = "Auto Tele + Press E sẵn sàng!",
+    Duration = 5
+})
