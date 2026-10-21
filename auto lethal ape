@@ -1,371 +1,245 @@
--- ============================================
--- MENU TELEPORT + LƠ LỬNG TRÊN CAO
--- Tọa độ: X=-8.01, Y=973.14, Z=-66.22
--- ============================================
-
 local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
 
--- Tọa độ đích
-local TARGET_POSITION = Vector3.new(-8.01, 973.14, -66.22)
+-- Tọa độ mục tiêu
+local targetPosition = Vector3.new(-184.15, 1035.19, -68.42)
 
--- Trạng thái lơ lửng
-local floating = false
-local floatConnection = nil
-local originalY = TARGET_POSITION.Y
+-- Xóa Menu cũ nếu đã tồn tại
+local oldGui = CoreGui:FindFirstChild("TeleportMenu")
+if oldGui then oldGui:Destroy() end
 
--- Xóa menu cũ nếu tồn tại
-if CoreGui:FindFirstChild("QuickTeleportMenu") then
-    CoreGui.QuickTeleportMenu:Destroy()
-end
-
--- ============================================
--- HÀM LƠ LỬNG (FLOAT)
--- ============================================
-local function StartFloating()
-    if floating then return end
-    floating = true
-    
-    local character = LocalPlayer.Character
-    if not character then return end
-    
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not rootPart or not humanoid then return end
-    
-    -- Tắt trọng lực để không bị rơi
-    humanoid.PlatformStand = true
-    
-    -- Neo giữ nhân vật ở độ cao cố định
-    floatConnection = RunService.Heartbeat:Connect(function()
-        local char = LocalPlayer.Character
-        if not char then return end
-        
-        local rp = char:FindFirstChild("HumanoidRootPart")
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if not rp or not hum then return end
-        
-        -- Giữ nguyên vị trí X, Z hiện tại, khóa Y ở độ cao mục tiêu
-        local currentPos = rp.Position
-        rp.Velocity = Vector3.new(0, 0, 0)
-        rp.CFrame = CFrame.new(currentPos.X, originalY, currentPos.Z)
-        
-        hum.PlatformStand = true
-    end)
-end
-
-local function StopFloating()
-    if not floating then return end
-    floating = false
-    
-    if floatConnection then
-        floatConnection:Disconnect()
-        floatConnection = nil
-    end
-    
-    local character = LocalPlayer.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.PlatformStand = false
-        end
-    end
-end
-
--- ============================================
--- HÀM TELEPORT
--- ============================================
-local function TeleportToTarget()
-    local character = LocalPlayer.Character
-    if not character then
-        warn("Không tìm thấy nhân vật!")
-        return
-    end
-    
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if not rootPart then
-        warn("Không tìm thấy HumanoidRootPart!")
-        return
-    end
-    
-    -- Teleport đến tọa độ
-    rootPart.CFrame = CFrame.new(TARGET_POSITION)
-    rootPart.Velocity = Vector3.new(0, 0, 0)
-    
-    -- Tự động bật lơ lửng sau khi teleport
-    task.wait(0.1)
-    StartFloating()
-end
-
--- ============================================
--- TẠO GIAO DIỆN
--- ============================================
+-- ==========================================
+-- 1. TẠO GIAO DIỆN MENU NHỎ GỌN
+-- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "QuickTeleportMenu"
-ScreenGui.Parent = CoreGui
+ScreenGui.Name = "TeleportMenu"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = CoreGui
 
--- Khung chính
+-- Khung chính của Menu
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 230, 0, 160)
-MainFrame.Position = UDim2.new(0, 20, 0.5, -80)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
-MainFrame.BackgroundTransparency = 0.15
+MainFrame.Size = UDim2.new(0, 200, 0, 150) -- Tăng nhẹ chiều rộng để vừa chữ
+MainFrame.Position = UDim2.new(0, 20, 0, 20)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
 MainFrame.Parent = ScreenGui
 
-local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0, 10)
-Corner.Parent = MainFrame
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
 
-local Stroke = Instance.new("UIStroke")
-Stroke.Color = Color3.fromRGB(0, 200, 150)
-Stroke.Thickness = 1.5
-Stroke.Transparency = 0.3
-Stroke.Parent = MainFrame
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(0, 255, 120)
+UIStroke.Thickness = 1.5
+UIStroke.Parent = MainFrame
 
--- Thanh tiêu đề
+-- Thanh tiêu đề (Để kéo thả)
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 30)
-TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+TitleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 TitleBar.BorderSizePixel = 0
 TitleBar.Parent = MainFrame
 
 local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.CornerRadius = UDim.new(0, 8)
 TitleCorner.Parent = TitleBar
 
-local TitleCover = Instance.new("Frame")
-TitleCover.Size = UDim2.new(1, 0, 0, 15)
-TitleCover.Position = UDim2.new(0, 0, 1, -15)
-TitleCover.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-TitleCover.BorderSizePixel = 0
-TitleCover.Parent = TitleBar
+local TitleText = Instance.new("TextLabel")
+TitleText.Size = UDim2.new(1, -10, 1, 0)
+TitleText.Position = UDim2.new(0, 10, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "Mini Tween Teleporter"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.Font = Enum.Font.GothamBold
+TitleText.TextSize = 12
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Parent = TitleBar
 
--- Tiêu đề
-local Title = Instance.new("TextLabel")
-Title.Text = "⚡ TELEPORT + FLOAT"
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 13
-Title.TextColor3 = Color3.fromRGB(0, 255, 180)
-Title.BackgroundTransparency = 1
-Title.Size = UDim2.new(1, -50, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TitleBar
-
--- Nút thu nhỏ
-local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
-MinimizeBtn.Position = UDim2.new(1, -45, 0.5, -10)
-MinimizeBtn.BackgroundTransparency = 1
-MinimizeBtn.Text = "—"
-MinimizeBtn.TextSize = 14
-MinimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.Parent = TitleBar
-
--- Nút đóng
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 20, 0, 20)
-CloseBtn.Position = UDim2.new(1, -25, 0.5, -10)
-CloseBtn.BackgroundTransparency = 1
-CloseBtn.Text = "✕"
-CloseBtn.TextSize = 12
-CloseBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.Parent = TitleBar
-
-CloseBtn.MouseButton1Click:Connect(function()
-    StopFloating()
-    ScreenGui:Destroy()
-end)
-
--- Hiển thị tọa độ
-local CoordLabel = Instance.new("TextLabel")
-CoordLabel.Text = string.format("X: %.2f | Y: %.2f | Z: %.2f", TARGET_POSITION.X, TARGET_POSITION.Y, TARGET_POSITION.Z)
-CoordLabel.Font = Enum.Font.Code
-CoordLabel.TextSize = 12
-CoordLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
-CoordLabel.BackgroundTransparency = 1
-CoordLabel.Size = UDim2.new(1, -20, 0, 20)
-CoordLabel.Position = UDim2.new(0, 10, 0, 33)
-CoordLabel.TextXAlignment = Enum.TextXAlignment.Left
-CoordLabel.Parent = MainFrame
-
--- Nút Teleport
-local TeleportBtn = Instance.new("TextButton")
-TeleportBtn.Size = UDim2.new(1, -20, 0, 32)
-TeleportBtn.Position = UDim2.new(0, 10, 0, 58)
-TeleportBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
-TeleportBtn.Text = "🚀 TELEPORT + FLOAT"
-TeleportBtn.Font = Enum.Font.GothamBold
-TeleportBtn.TextSize = 13
-TeleportBtn.TextColor3 = Color3.new(1, 1, 1)
-TeleportBtn.BorderSizePixel = 0
-TeleportBtn.Parent = MainFrame
-
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 8)
-BtnCorner.Parent = TeleportBtn
-
--- Nút bật/tắt lơ lửng thủ công
-local FloatBtn = Instance.new("TextButton")
-FloatBtn.Size = UDim2.new(1, -20, 0, 32)
-FloatBtn.Position = UDim2.new(0, 10, 0, 98)
-FloatBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
-FloatBtn.Text = "🪂 FLOAT: OFF"
-FloatBtn.Font = Enum.Font.GothamBold
-FloatBtn.TextSize = 13
-FloatBtn.TextColor3 = Color3.new(1, 1, 1)
-FloatBtn.BorderSizePixel = 0
-FloatBtn.Parent = MainFrame
-
-local FloatCorner = Instance.new("UICorner")
-FloatCorner.CornerRadius = UDim.new(0, 8)
-FloatCorner.Parent = FloatBtn
-
--- Hiệu ứng hover Teleport
-TeleportBtn.MouseEnter:Connect(function()
-    TweenService:Create(TeleportBtn, TweenInfo.new(0.2), {
-        BackgroundColor3 = Color3.fromRGB(0, 200, 130)
-    }):Play()
-end)
-
-TeleportBtn.MouseLeave:Connect(function()
-    TweenService:Create(TeleportBtn, TweenInfo.new(0.2), {
-        BackgroundColor3 = Color3.fromRGB(0, 150, 100)
-    }):Play()
-end)
-
--- Xử lý nút Teleport
-TeleportBtn.MouseButton1Click:Connect(function()
-    TeleportToTarget()
-    TeleportBtn.Text = "✅ ĐÃ TELEPORT + FLOAT!"
-    task.delay(1.5, function()
-        if TeleportBtn and TeleportBtn.Parent then
-            TeleportBtn.Text = "🚀 TELEPORT + FLOAT"
-        end
-    end)
-    -- Cập nhật nút Float
-    FloatBtn.Text = "🪂 FLOAT: ON"
-    FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
-end)
-
--- Xử lý nút Float
-FloatBtn.MouseButton1Click:Connect(function()
-    if floating then
-        StopFloating()
-        FloatBtn.Text = "🪂 FLOAT: OFF"
-        FloatBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
-    else
-        -- Nếu chưa ở tọa độ, teleport trước
-        local character = LocalPlayer.Character
-        local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            local dist = (rootPart.Position - TARGET_POSITION).Magnitude
-            if dist > 50 then
-                rootPart.CFrame = CFrame.new(TARGET_POSITION)
-                task.wait(0.1)
-            end
-        end
-        StartFloating()
-        FloatBtn.Text = "🪂 FLOAT: ON"
-        FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
-    end
-end)
-
--- === Kéo thả menu ===
-local dragging = false
-local dragStart, startPos
-
+-- Hiệu ứng kéo thả
+local dragging, dragInput, dragStart, startPos
 TitleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 
-    or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = MainFrame.Position
-        
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
         end)
     end
 end)
-
+TitleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
 UserInputService.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement 
-    or input.UserInputType == Enum.UserInputType.Touch) then
+    if input == dragInput and dragging then
         local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
--- === Thu nhỏ / Mở rộng ===
-local minimized = false
-MinimizeBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    if minimized then
-        MainFrame.Size = UDim2.new(0, 230, 0, 30)
-        CoordLabel.Visible = false
-        TeleportBtn.Visible = false
-        FloatBtn.Visible = false
-        MinimizeBtn.Text = "+"
-    else
-        MainFrame.Size = UDim2.new(0, 230, 0, 160)
-        CoordLabel.Visible = true
-        TeleportBtn.Visible = true
-        FloatBtn.Visible = true
-        MinimizeBtn.Text = "—"
-    end
-end)
-
--- Phím tắt: T = teleport + float, F = bật/tắt float
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
+-- ==========================================
+-- 2. CHỨC NĂNG TẠO NÚT
+-- ==========================================
+local function CreateButton(text, posY, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 28)
+    btn.Position = UDim2.new(0.05, 0, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 12
+    btn.AutoButtonColor = false
+    btn.Parent = MainFrame
     
-    if input.KeyCode == Enum.KeyCode.T then
-        TeleportToTarget()
-        FloatBtn.Text = "🪂 FLOAT: ON"
-        FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
-    elseif input.KeyCode == Enum.KeyCode.F then
-        if floating then
-            StopFloating()
-            FloatBtn.Text = "🪂 FLOAT: OFF"
-            FloatBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
-        else
-            StartFloating()
-            FloatBtn.Text = "🪂 FLOAT: ON"
-            FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(100, 100, 110)
+        task.wait(0.1)
+        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+        callback()
+    end)
+    return btn
+end
+
+-- ==========================================
+-- 3. LOGIC CHỨC NĂNG
+-- ==========================================
+local isNoclip = false
+local noclipConn = nil
+local isFloating = false
+local activeTween = nil -- Biến lưu Tween hiện tại để hủy nếu cần
+
+local function GetCharacterParts()
+    local char = LocalPlayer.Character
+    if not char then return nil, nil, nil end
+    return char, char:FindFirstChildOfClass("Humanoid"), char:FindFirstChild("HumanoidRootPart")
+end
+
+-- Chức năng Noclip
+local function ToggleNoclip()
+    isNoclip = not isNoclip
+    
+    if isNoclip then
+        if not noclipConn then
+            noclipConn = RunService.Stepped:Connect(function()
+                local char = GetCharacterParts()
+                if char then
+                    for _, part in ipairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        end
+    else
+        if noclipConn then
+            noclipConn:Disconnect()
+            noclipConn = nil
+            local char = GetCharacterParts()
+            if char then
+                for _, part in ipairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
         end
     end
+end
+
+-- Chức năng Lơ lửng (Float)
+local function SetFloat(state)
+    local _, _, hrp = GetCharacterParts()
+    if not hrp then return end
+    
+    isFloating = state
+    if state then
+        if not hrp:FindFirstChild("HoverBodyPosition") then
+            local bp = Instance.new("BodyPosition")
+            bp.Name = "HoverBodyPosition"
+            bp.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bp.Position = hrp.Position
+            bp.Parent = hrp
+        end
+    else
+        local bp = hrp:FindFirstChild("HoverBodyPosition")
+        if bp then bp:Destroy() end
+    end
+end
+
+-- Chức năng Tween (Bay mượt đến tọa độ)
+local function TweenToCoords()
+    local _, _, hrp = GetCharacterParts()
+    if not hrp then return end
+    
+    -- Hủy tween cũ nếu đang bay dở
+    if activeTween then
+        activeTween:Cancel()
+    end
+
+    -- Tạm tắt Float để tween hoạt động trơn tru
+    local wasFloating = isFloating
+    if isFloating then SetFloat(false) end
+
+    -- Cấu hình Tween: Thời gian 3 giây, kiểu bay mượt (Quad)
+    local tweenInfo = TweenInfo.new(
+        3, -- Thời gian bay (giây) - Bạn có thể sửa thành 5, 10 tùy ý
+        Enum.EasingStyle.Quad, 
+        Enum.EasingDirection.Out
+    )
+    
+    local targetCFrame = CFrame.new(targetPosition)
+    
+    -- Tạo và chạy Tween
+    activeTween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+    activeTween:Play()
+    
+    -- Khi bay xong, nếu trước đó bật Float thì bật lại
+    activeTween.Completed:Connect(function()
+        if wasFloating then
+            SetFloat(true)
+        end
+        activeTween = nil
+    end)
+end
+
+-- ==========================================
+-- 4. KHỞI TẠO NÚT BẤM
+-- ==========================================
+CreateButton("Bay (Tween) Đến Tọa Độ", 35, function()
+    TweenToCoords()
 end)
 
--- Tự động reset khi nhân vật hồi sinh
+local btnNoclip = CreateButton("Noclip: OFF", 70, function()
+    ToggleNoclip()
+    btnNoclip.Text = "Noclip: " .. (isNoclip and "ON" or "OFF")
+    btnNoclip.TextColor3 = isNoclip and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(255, 255, 255)
+end)
+
+local btnFloat = CreateButton("Float (Lơ Lửng): OFF", 105, function()
+    SetFloat(not isFloating)
+    btnFloat.Text = "Float (Lơ Lửng): " .. (isFloating and "ON" or "OFF")
+    btnFloat.TextColor3 = isFloating and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(255, 255, 255)
+end)
+
+-- Tự động dọn dẹp khi nhân vật chết
 LocalPlayer.CharacterAdded:Connect(function()
-    if floating then
-        floating = false
-        if floatConnection then
-            floatConnection:Disconnect()
-            floatConnection = nil
-        end
-        task.wait(1)
-        StartFloating()
-    end
+    isFloating = false
+    if activeTween then activeTween:Cancel() end
+    btnFloat.Text = "Float (Lơ Lửng): OFF"
+    btnFloat.TextColor3 = Color3.fromRGB(255, 255, 255)
 end)
-
-print("✅ Menu Teleport + Float đã tải!")
-print("💡 Nhấn T = Teleport + Float | F = Bật/tắt lơ lửng")
-print("📍 Tọa độ: X=-8.01, Y=973.14, Z=-66.22")
