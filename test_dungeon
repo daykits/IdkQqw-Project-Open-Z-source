@@ -1,0 +1,1183 @@
+-- ============================================================
+-- MINI DUNGEON HUB (Redzlib)
+-- Chỉ giữ phần Auto Dungeon — nhỏ gọn
+-- ============================================================
+
+-- === CẤU HÌNH ===
+local REDZLIB_URL = "https://raw.githubusercontent.com/daykits/Ui-banana.lua/refs/heads/main/UI%20tlredz" -- ← thay bằng raw link file redzlib
+
+-- === LOAD UI ===
+local redzlib = loadstring(game:HttpGet(https://raw.githubusercontent.com/daykits/Ui-banana.lua/refs/heads/main/UI%20tlredz))()
+
+local Window = redzlib:MakeWindow({
+    Name    = "Mini Dungeon",
+    SubTitle= "Auto Farm",
+    SaveFolder = "mini_dungeon.json",
+})
+
+local Tab = Window:MakeTab({
+    Title = "Dungeon",
+    Icon  = "sword",
+})
+
+-- ============================================================
+-- SERVICES
+-- ============================================================
+local Players      = game:GetService("Players")
+local RunService   = game:GetService("RunService")
+local RS           = game:GetService("ReplicatedStorage")
+local VIM          = game:GetService("VirtualInputManager")
+local TeleportService = game:GetService("TeleportService")
+local LP           = Players.LocalPlayer
+
+-- Anti-AFK
+LP.Idled:Connect(function()
+    game:GetService("VirtualUser"):CaptureController()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end)
+
+-- ============================================================
+-- STATE
+-- ============================================================
+local AD = {
+    enabled        = false,
+    loopID         = 0,
+    status         = "idle",
+    weapon         = "Kraken Blade",
+    tweenSpeed     = 89,
+    upHeight       = 10,
+    comboDelay     = 0.15,
+    fullComboWait  = 1.0,
+    autoReplay     = true,
+    autoStoreFruit = true,
+}
+
+local canAttack       = true
+local lockedPosition  = nil
+local antiKBEnabled   = false
+local activeTpConn    = nil
+local invisibleFloor  = nil
+local isTeleporting   = false
+local tpId            = 0
+local hookedBossNPC     = nil
+local hookedBossCleanup = nil
+local cupidTrackTarget  = nil
+local cupidTrackActive  = false
+local weaponEquipped    = false
+
+getgenv().adSkipHit             = false
+getgenv().adStatuePhaseActive   = false
+getgenv().adCupidPhase2Permanent= false
+
+-- ============================================================
+-- ANTI-KNOCKBACK
+-- ============================================================
+RunService.Heartbeat:Connect(function()
+    local char = LP.Character
+    if not char then return end
+    local rp  = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChild("Humanoid")
+    if not rp or not hum then return end
+
+    if hum.PlatformStand then hum.PlatformStand = false end
+
+    if lockedPosition then
+        local dist = (rp.Position - lockedPosition).Magnitude
+        if dist > 0.5 then
+            local dir  = (lockedPosition - rp.Position).Unit
+            local step = math.min(AD.tweenSpeed * 0.016, dist)
+            rp.CFrame = (rp.CFrame - rp.Position) + (rp.Position + dir * step)
+        else
+            rp.CFrame = CFrame.new(lockedPosition) * CFrame.Angles(math.rad(-90), 0, 0)
+        end
+        rp.AssemblyLinearVelocity  = Vector3.zero
+        rp.AssemblyAngularVelocity = Vector3.zero
+        return
+    end
+
+    if antiKBEnabled then
+        rp.AssemblyLinearVelocity  = Vector3.zero
+        rp.AssemblyAngularVelocity = Vector3.zero
+    end
+end)
+
+-- ============================================================
+-- TWEEN TELEPORT
+-- ============================================================
+local function DoSafeTeleport(targetPos)
+    if typeof(targetPos) == "CFrame" then targetPos = targetPos.Position end
+    local char = LP.Character
+    local rp   = char and char:FindFirstChild("HumanoidRootPart")
+    local hum  = char and char:FindFirstChild("Humanoid")
+    if not rp or not hum or hum.Health <= 0 then return end
+
+    local dist = (rp.Position - targetPos).Magnitude
+    if dist < 5 then
+        rp.CFrame = (rp.CFrame - rp.Position) + targetPos
+        return
+    end
+
+    if activeTpConn then activeTpConn:Disconnect(); activeTpConn = nil end
+    if invisibleFloor then invisibleFloor:Destroy(); invisibleFloor = nil end
+
+    isTeleporting = true
+    tpId = tpId + 1
+    local currentTpId = tpId
+    local reached = false
+
+    local floor = Instance.new("Part")
+    floor.Size = Vector3.new(10, 1, 10)
+    floor.Transparency = 1
+    floor.Anchored = true
+    floor.CanCollide = true
+    floor.Parent = workspace
+    invisibleFloor = floor
+
+    VIM:SendKeyEvent(true, Enum.KeyCode.W, false, game)
+
+    local conn
+    conn = RunService.Heartbeat:Connect(function(dt)
+        if not rp or not rp.Parent or hum.Health <= 0 or tpId ~= currentTpId then
+            reached = true
+            if conn then conn:Disconnect() end
+            return
+        end
+        local d = (rp.Position - targetPos).Magnitude
+        if d <= 5 then
+            rp.CFrame = (rp.CFrame - rp.Position) + targetPos
+            rp.AssemblyLinearVelocity = Vector3.zero
+            reached = true
+            if invisibleFloor then invisibleFloor:Destroy(); invisibleFloor = nil end
+            isTeleporting = false
+            if conn then conn:Disconnect() end
+            return
+        end
+        local dir = (targetPos - rp.Position).Unit
+        local step = math.min(AD.tweenSpeed * dt, d * 0.98)
+        rp.CFrame = (rp.CFrame - rp.Position) + (rp.Position + dir * step)
+        rp.AssemblyLinearVelocity = Vector3.zero
+        if invisibleFloor and invisibleFloor.Parent then
+            invisibleFloor.CFrame = rp.CFrame * CFrame.new(0, -3.1, 0)
+        end
+    end)
+    activeTpConn = conn
+
+    while not reached and tpId == currentTpId do task.wait(0.1) end
+    VIM:SendKeyEvent(false, Enum.KeyCode.W, false, game)
+end
+
+-- ============================================================
+-- REMOTES
+-- ============================================================
+local Events          = RS:WaitForChild("Events", 5)
+local combatRegister  = Events and Events:WaitForChild("CombatRegister", 5)
+local combatAnims_MB  = RS:FindFirstChild("CombatAnimations") and RS.CombatAnimations:FindFirstChild("Melee")
+local blockRemote     = Events and Events:WaitForChild("Block", 5)
+local hakiRemote      = Events and Events:WaitForChild("Haki", 5)
+local hotbarRemote    = Events and Events:WaitForChild("Hotbar", 5)
+
+local CombatAnims = combatAnims_MB and {
+    combatAnims_MB.Punch1, combatAnims_MB.Punch2,
+    combatAnims_MB.Punch3, combatAnims_MB.GroundPunch4,
+    combatAnims_MB.GroundPunch5,
+} or {}
+
+local KrakenAnims = {}
+task.spawn(function()
+    local variants = {
+        "Kraken Blade", "Kraken Blade (Gold)", "Kraken Blade (Azure)",
+        "Kraken Blade (Blue)", "Kraken Blade (Green)",
+        "Kraken Blade (Purple)", "Kraken Blade (Red)"
+    }
+    local ok, s = pcall(function()
+        local tools = RS:WaitForChild("Modules", 5):WaitForChild("SwordHandle", 5):WaitForChild("Swords", 5)
+        for _, v in ipairs(variants) do
+            local t = tools:FindFirstChild(v)
+            if t then
+                local sl = t:FindFirstChild("Slashes")
+                if sl then return sl end
+            end
+        end
+        error("not found")
+    end)
+    if ok and s then
+        for i, n in ipairs({"Slash1","Slash2","Slash3","GroundSlash4","GroundSlash5"}) do
+            KrakenAnims[i] = s:WaitForChild(n)
+        end
+    end
+end)
+
+-- ============================================================
+-- EQUIP WEAPON
+-- ============================================================
+local function equipWeapon()
+    local wn = AD.weapon or "Melee"
+    local char = LP.Character
+    if not char then return false end
+
+    local keyword = string.lower(wn):gsub("%(.*%)", ""):gsub("%s+$", "")
+
+    -- Already equipped?
+    for _, tool in ipairs(char:GetChildren()) do
+        if tool:IsA("Tool") and string.lower(tool.Name):find(keyword, 1, true) then
+            pcall(function() hakiRemote:FireServer("Buso") end)
+            weaponEquipped = true
+            return true
+        end
+    end
+
+    -- Find real name in backpack
+    local realName = wn
+    local bp = LP:FindFirstChild("Backpack")
+    if bp then
+        for _, tool in ipairs(bp:GetChildren()) do
+            if tool:IsA("Tool") and string.lower(tool.Name):find(keyword, 1, true) then
+                realName = tool.Name
+                break
+            end
+        end
+    end
+
+    pcall(function()
+        hotbarRemote:FireServer({
+            Zero="None", One=realName, Two="None", Three="None", Four="None",
+            Five="None", Six="None", Seven="None", Eight="None", Nine="None"
+        })
+    end)
+    task.wait(0.3)
+
+    local pg = LP:FindFirstChild("PlayerGui")
+    local hotbar = pg and pg:FindFirstChild("BackpackGui") and pg.BackpackGui:FindFirstChild("Hotbar")
+    if hotbar and hotbar:FindFirstChild("One") then
+        VIM:SendKeyEvent(true, Enum.KeyCode.One, false, nil)
+        task.wait(0.1)
+        VIM:SendKeyEvent(false, Enum.KeyCode.One, false, nil)
+    end
+    task.wait(0.2)
+    pcall(function() hakiRemote:FireServer("Buso") end)
+    weaponEquipped = true
+    return true
+end
+
+-- ============================================================
+-- NPC UTILS
+-- ============================================================
+local function getNPCID(npc)
+    if not npc then return nil end
+    local v = npc:FindFirstChild("NPCID")
+    if v then return v.Value end
+    local cfg = npc:FindFirstChild("Configuration")
+    if cfg then
+        local cv = cfg:FindFirstChild("NPCID")
+        if cv then return cv.Value end
+    end
+    return npc:GetAttribute("NPCID")
+end
+
+local function getAllNearbyNPCs(pos, radius)
+    local res = {}
+    radius = radius or 80
+    local function scan(fn)
+        local f = workspace:FindFirstChild(fn)
+        if not f then return end
+        for _, v in pairs(f:GetChildren()) do
+            if v:IsA("Model") then
+                local hum = v:FindFirstChild("Humanoid")
+                local hrp = v:FindFirstChild("HumanoidRootPart")
+                if hum and hum.Health > 0 and hrp then
+                    local dx = pos.X - hrp.Position.X
+                    local dz = pos.Z - hrp.Position.Z
+                    local d  = math.sqrt(dx*dx + dz*dz)
+                    if d <= radius then
+                        table.insert(res, {npc = v, hrp = hrp, dist = d})
+                    end
+                end
+            end
+        end
+    end
+    scan("NPCs"); scan("Enemies")
+    table.sort(res, function(a, b) return a.dist < b.dist end)
+    return res
+end
+
+local function findBossGlobal(bossName)
+    local function scan(fn)
+        local f = workspace:FindFirstChild(fn)
+        if not f then return nil end
+        for _, v in pairs(f:GetChildren()) do
+            if v:IsA("Model") and string.lower(v.Name) == string.lower(bossName) then
+                local hum = v:FindFirstChild("Humanoid")
+                local hrp = v:FindFirstChild("HumanoidRootPart")
+                if hum and hum.Health > 0 and hrp then return v end
+            end
+        end
+        return nil
+    end
+    return scan("NPCs") or scan("Enemies")
+end
+
+-- ============================================================
+-- CUPID TRACKER
+-- ============================================================
+task.spawn(function()
+    while true do
+        task.wait(0.05)
+        if not cupidTrackActive or not AD.enabled or not cupidTrackTarget then continue end
+        local hrp = cupidTrackTarget:FindFirstChild("HumanoidRootPart")
+        local hum = cupidTrackTarget:FindFirstChild("Humanoid")
+        if not hrp or not hum or hum.Health <= 0 then
+            cupidTrackTarget = nil; cupidTrackActive = false; continue
+        end
+        if getgenv().adStatuePhaseActive then continue end
+        local rp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if not rp then continue end
+        local targetPos = Vector3.new(hrp.Position.X, hrp.Position.Y + AD.upHeight, hrp.Position.Z)
+        if (rp.Position - targetPos).Magnitude > 5 then
+            lockedPosition = nil
+            DoSafeTeleport(targetPos)
+        end
+        lockedPosition = targetPos
+    end
+end)
+
+-- ============================================================
+-- COMBAT
+-- ============================================================
+local function attackNPC(npc)
+    if not npc then return end
+    local hum = npc:FindFirstChild("Humanoid")
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+    if not hum or hum.Health <= 0 or not hrp then return end
+    if not canAttack then return end
+
+    canAttack = false
+    antiKBEnabled = true
+
+    local nlo = string.lower(npc.Name)
+    local isLeo   = (nlo == "leo")
+    local isCupid = (nlo == "cupid queen")
+    local delay   = isCupid and 0.21 or (isLeo and 0.20 or AD.comboDelay)
+
+    local rp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    local isKraken = AD.weapon == "Kraken Blade"
+    local wType = isKraken and "Sword" or "Melee"
+    local anims = isKraken and KrakenAnims or CombatAnims
+    local swSp  = isKraken and 1.4583332538604736 or 1.75
+
+    for combo = 1, 5 do
+        if not AD.enabled then break end
+        if getgenv().adSkipHit and string.lower(npc.Name) ~= "cupid queen" then break end
+        if getgenv().adStatuePhaseActive then break end
+
+        hum = npc:FindFirstChild("Humanoid")
+        hrp = npc:FindFirstChild("HumanoidRootPart")
+        if not hum or hum.Health <= 0 or not hrp then break end
+
+        local hrpList = {}
+        local npcIDs  = {}
+        local scanPos = rp and rp.Position or hrp.Position
+        for _, d in ipairs(getAllNearbyNPCs(scanPos, 120)) do
+            if d.hrp and d.npc:FindFirstChild("Humanoid") and d.npc.Humanoid.Health > 0 then
+                table.insert(hrpList, d.hrp)
+                local did = getNPCID(d.npc)
+                if did then table.insert(npcIDs, did) end
+            end
+        end
+        if #hrpList == 0 then table.insert(hrpList, hrp) end
+
+        if rp then
+            rp.AssemblyLinearVelocity  = Vector3.zero
+            rp.AssemblyAngularVelocity = Vector3.zero
+        end
+
+        pcall(function()
+            combatRegister:InvokeServer({[1]="swingsfx",[2]=wType,[3]=combo,[4]="Ground",[5]=false,[6]=anims[combo],[7]=swSp,[8]=1.5})
+            local da = {[1]={[1]="damage",[2]=hrpList,[3]=wType,[4]={combo,"Ground",wType},[5]=true,[6]=rp and rp.CFrame or CFrame.new(),aircombo="Ground"}}
+            if #npcIDs > 0 then da[1].NPCIDs = npcIDs end
+            combatRegister:InvokeServer(unpack(da))
+        end)
+
+        if getgenv().adStatuePhaseActive then break end
+        task.wait(delay)
+    end
+
+    local w = 0
+    local wt = isCupid and 1.2 or AD.fullComboWait
+    while w < wt do
+        if getgenv().adStatuePhaseActive then break end
+        task.wait(0.05); w = w + 0.05
+    end
+    antiKBEnabled = false
+    canAttack = true
+end
+
+-- ============================================================
+-- BOSS ANIM HOOKS
+-- ============================================================
+local LEO_ANIMS = {
+    ["rbxassetid://5244141327"] = {action = "Pillar"},
+    ["rbxassetid://5244138278"] = {action = "PillarFixed"},
+    ["rbxassetid://5220236154"] = {action = "Block"},
+    ["rbxassetid://5220917407"] = {action = "Block"},
+}
+local CUPID_ANIMS = {}
+for _, id in ipairs({
+    "8756559629","82430354923671","129337113115675","101880240326459",
+    "101734841287531","76758555772040","3027864591","3027717390",
+    "72351954958849","71247709504586","10001705684","9611810596",
+    "76590479630089","129473336385530"
+}) do
+    CUPID_ANIMS["rbxassetid://" .. id] = {action = "Block"}
+end
+CUPID_ANIMS["rbxassetid://16929753098"] = {action = "StatuePhase"}
+
+local function startBossHook(bossModel, bossAnimsTable)
+    local conns = {}
+    local function cleanup()
+        for _, c in ipairs(conns) do pcall(function() c:Disconnect() end) end
+        conns = {}
+        pcall(function() blockRemote:InvokeServer(false, "Melee", false) end)
+        getgenv().adSkipHit = false
+    end
+
+    local humanoid = bossModel:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return cleanup end
+    local animator = humanoid:FindFirstChildOfClass("Animator")
+    if not animator then return cleanup end
+
+    table.insert(conns, animator.AnimationPlayed:Connect(function(track)
+        local rp      = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        local bossHrp = bossModel:FindFirstChild("HumanoidRootPart")
+        if rp and bossHrp and (rp.Position - bossHrp.Position).Magnitude > 200 then return end
+
+        local animId = track.Animation and track.Animation.AnimationId
+        if not animId then return end
+        local reaction = bossAnimsTable[animId]
+        if not reaction then return end
+
+        local act = reaction.action
+        if act == "Block" then
+            local wT = (AD.weapon == "Melee") and "Melee" or "Sword"
+            pcall(function() blockRemote:InvokeServer(true, wT, true) end)
+            getgenv().adSkipHit = true
+            local released = false
+            local function release()
+                if released then return end
+                released = true
+                task.wait(0.15)
+                pcall(function() blockRemote:InvokeServer(false, wT) end)
+                getgenv().adSkipHit = false
+            end
+            table.insert(conns, track.Stopped:Connect(release))
+            task.delay(3, release)
+        elseif act == "Pillar" then
+            getgenv().adSkipHit = true
+            if rp and bossHrp then
+                local away = Vector3.new(rp.Position.X - bossHrp.Position.X, 0, rp.Position.Z - bossHrp.Position.Z)
+                if away.Magnitude > 0 then away = away.Unit else away = Vector3.new(1, 0, 0) end
+                local fleePos = rp.Position + away * 60
+                fleePos = Vector3.new(fleePos.X, bossHrp.Position.Y, fleePos.Z)
+                task.spawn(function() lockedPosition = nil; DoSafeTeleport(fleePos); lockedPosition = fleePos end)
+            end
+            table.insert(conns, track.Stopped:Connect(function()
+                task.wait(0.3); getgenv().adSkipHit = false; lockedPosition = nil
+            end))
+        elseif act == "PillarFixed" then
+            getgenv().adSkipHit = true
+            task.spawn(function()
+                lockedPosition = nil
+                DoSafeTeleport(Vector3.new(-1079.728, 507.296, -3948.496))
+                lockedPosition = Vector3.new(-1079.728, 507.296, -3948.496)
+                task.wait(3); getgenv().adSkipHit = false; lockedPosition = nil
+            end)
+        elseif act == "StatuePhase" then
+            getgenv().adStatuePhaseActive = true
+            task.delay(60, function() getgenv().adStatuePhaseActive = false end)
+        end
+    end))
+
+    table.insert(conns, humanoid.Died:Connect(cleanup))
+    return cleanup
+end
+
+-- Boss radar
+task.spawn(function()
+    while task.wait(0.5) do
+        if not AD.enabled then continue end
+        local leo = findBossGlobal("Leo")
+        if leo and hookedBossNPC ~= leo then
+            if hookedBossCleanup then hookedBossCleanup() end
+            hookedBossCleanup = startBossHook(leo, LEO_ANIMS)
+            hookedBossNPC = leo
+        end
+        local cupid = findBossGlobal("Cupid Queen")
+        if cupid and hookedBossNPC ~= cupid then
+            if hookedBossCleanup then hookedBossCleanup() end
+            hookedBossCleanup = startBossHook(cupid, CUPID_ANIMS)
+            hookedBossNPC = cupid
+        end
+    end
+end)
+
+-- ============================================================
+-- STATUES
+-- ============================================================
+local function statuesNeedKilling()
+    local obj = LP.PlayerGui:FindFirstChild("Objectives")
+    if not obj then return false end
+    local main = obj:FindFirstChild("Main")
+    if not main then return false end
+    return main:FindFirstChild("Take down the Statues") ~= nil
+end
+
+task.spawn(function()
+    local sf = workspace:FindFirstChild("Env") and workspace.Env:FindFirstChild("Statues")
+    if not sf then return end
+    while true do
+        task.wait(0.5)
+        if not AD.enabled or getgenv().adStatuePhaseActive then continue end
+        for _, statue in pairs(sf:GetChildren()) do
+            local b = statue:FindFirstChild("barrelHP")
+            if b and b.Value > 0 then getgenv().adStatuePhaseActive = true; break end
+        end
+    end
+end)
+
+local function killStatues(loopID)
+    AD.status = "statues"
+    local isKraken = AD.weapon == "Kraken Blade"
+    local wType = isKraken and "Sword" or "Melee"
+    local anims = isKraken and KrakenAnims or CombatAnims
+    local swSp  = isKraken and 1.4583332538604736 or 1.75
+    local sf = workspace:FindFirstChild("Env") and workspace.Env:FindFirstChild("Statues")
+    if not sf then return end
+
+    for _, statue in ipairs(sf:GetChildren()) do
+        if not AD.enabled or AD.loopID ~= loopID then break end
+        if not statuesNeedKilling() then break end
+        local hitbox = statue:FindFirstChild("hitbox")
+        if not hitbox then continue end
+
+        local savedSpeed = AD.tweenSpeed
+        AD.tweenSpeed = 70
+        lockedPosition = nil
+        DoSafeTeleport(hitbox.Position)
+        AD.tweenSpeed = savedSpeed
+        lockedPosition = nil
+        task.wait(0.3)
+
+        local barrelHP = statue:FindFirstChild("barrelHP")
+        while AD.enabled and AD.loopID == loopID and statuesNeedKilling() do
+            if not barrelHP or barrelHP.Value <= 0 then break end
+            local rp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if not rp then break end
+            if (rp.Position - hitbox.Position).Magnitude > 5 then
+                lockedPosition = nil
+                DoSafeTeleport(hitbox.Position)
+                lockedPosition = nil
+                task.wait(0.1)
+                rp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                if not rp then break end
+            end
+            if not canAttack then task.wait(0.1) end
+            canAttack = false
+            antiKBEnabled = true
+            for combo = 1, 5 do
+                if not AD.enabled or not barrelHP or barrelHP.Value <= 0 then break end
+                rp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                if not rp then break end
+                pcall(function()
+                    combatRegister:InvokeServer({[1]="swingsfx",[2]=wType,[3]=combo,[4]="Ground",[5]=false,[6]=anims[combo],[7]=swSp,[8]=1.5})
+                    combatRegister:InvokeServer({[1]="damage",[2]={hitbox},[3]=wType,[4]={combo,"Ground",wType},[5]=true,[6]=rp.CFrame,aircombo="Ground"})
+                end)
+                task.wait(AD.comboDelay)
+            end
+            task.wait(AD.fullComboWait)
+            antiKBEnabled = false
+            canAttack = true
+        end
+    end
+    getgenv().adStatuePhaseActive = false
+end
+
+-- ============================================================
+-- KILL ALL
+-- ============================================================
+local function killAllNPCsAtPos(pos, radius)
+    radius = radius or 120
+    local killed = {}
+    while AD.enabled do
+        if getgenv().adStatuePhaseActive then lockedPosition = nil; break end
+        local rp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if not rp then break end
+
+        local allNPCs = {}
+        local seen = {}
+        for _, d in ipairs(getAllNearbyNPCs(pos, radius)) do
+            if not killed[d.npc] and not seen[d.npc] then
+                seen[d.npc] = true; table.insert(allNPCs, d)
+            end
+        end
+        for _, d in ipairs(getAllNearbyNPCs(rp.Position, radius)) do
+            if not killed[d.npc] and not seen[d.npc] then
+                seen[d.npc] = true; table.insert(allNPCs, d)
+            end
+        end
+
+        if getgenv().adStatuePhaseActive or statuesNeedKilling() then
+            lockedPosition = nil; getgenv().adStatuePhaseActive = true; break
+        end
+        if #allNPCs == 0 then lockedPosition = nil; break end
+
+        table.sort(allNPCs, function(a, b)
+            return (rp.Position - a.hrp.Position).Magnitude < (rp.Position - b.hrp.Position).Magnitude
+        end)
+
+        local target = allNPCs[1]
+        local hrp = target.hrp
+        if hrp then
+            local tName = string.lower(target.npc.Name)
+            local isCupidQueen = (tName == "cupid queen")
+            if isCupidQueen then
+                if hookedBossNPC ~= target.npc then
+                    if hookedBossCleanup then hookedBossCleanup() end
+                    hookedBossCleanup = startBossHook(target.npc, CUPID_ANIMS)
+                    hookedBossNPC = target.npc
+                end
+            end
+
+            local lockedY = hrp.Position.Y + AD.upHeight
+            if getgenv().adSkipHit then
+                if isCupidQueen then
+                    cupidTrackTarget = target.npc; cupidTrackActive = true
+                else
+                    lockedPosition = nil
+                end
+                task.wait(0.05); continue
+            end
+
+            if isCupidQueen then
+                cupidTrackTarget = target.npc; cupidTrackActive = true
+            else
+                local combatPos = Vector3.new(hrp.Position.X, lockedY, hrp.Position.Z)
+                lockedPosition = nil
+                if (rp.Position - combatPos).Magnitude > 3 then
+                    DoSafeTeleport(combatPos)
+                end
+                lockedPosition = combatPos
+            end
+
+            if not isCupidQueen then task.wait(0.15) end
+            attackNPC(target.npc)
+            local humAfter = target.npc:FindFirstChild("Humanoid")
+            if not humAfter or humAfter.Health <= 0 then
+                killed[target.npc] = true
+            end
+        end
+        task.wait(0.05)
+    end
+end
+
+-- ============================================================
+-- BOSS FIGHTS
+-- ============================================================
+local function fightBoss(loopID, bossName)
+    AD.status = "boss"
+    canAttack = true
+    getgenv().adSkipHit = false
+    local searchStart = tick()
+    while AD.enabled and AD.loopID == loopID do
+        local boss = findBossGlobal(bossName)
+        if not boss then
+            if tick() - searchStart > 30 then break end
+            task.wait(1); continue
+        end
+        local bossHum = boss:FindFirstChild("Humanoid")
+        local bossHrp = boss:FindFirstChild("HumanoidRootPart")
+        if not bossHum or bossHum.Health <= 0 then break end
+        killAllNPCsAtPos(bossHrp.Position, 200)
+        task.wait(0.05)
+    end
+end
+
+local function fightCupidQueen(loopID)
+    AD.status = "boss"
+    canAttack = true
+    getgenv().adSkipHit = false
+    getgenv().adCupidPhase2Permanent = false
+    cupidTrackActive = false
+    cupidTrackTarget = nil
+
+    local boss = nil
+    while AD.enabled and AD.loopID == loopID do
+        boss = findBossGlobal("Cupid Queen")
+        if boss then
+            local h = boss:FindFirstChild("Humanoid")
+            if h and h.Health > 0 then break end
+        end
+        task.wait(0.5)
+    end
+    if not boss or not AD.enabled or AD.loopID ~= loopID then return end
+
+    if hookedBossNPC ~= boss then
+        if hookedBossCleanup then hookedBossCleanup() end
+        hookedBossCleanup = startBossHook(boss, CUPID_ANIMS)
+        hookedBossNPC = boss
+    end
+    cupidTrackTarget = boss
+    cupidTrackActive = true
+
+    while AD.enabled and AD.loopID == loopID do
+        if getgenv().adStatuePhaseActive or statuesNeedKilling() then
+            getgenv().adStatuePhaseActive = false
+            cupidTrackActive = false
+            lockedPosition = nil
+            killStatues(loopID)
+            cupidTrackTarget = boss
+            cupidTrackActive = true
+            AD.status = "boss"
+            continue
+        end
+        local bossHum = boss:FindFirstChild("Humanoid")
+        if not bossHum or bossHum.Health <= 0 then
+            cupidTrackActive = false; cupidTrackTarget = nil; break
+        end
+        local bossHrp = boss:FindFirstChild("HumanoidRootPart")
+        if not bossHrp then break end
+        killAllNPCsAtPos(bossHrp.Position, 200)
+        task.wait(0.05)
+    end
+end
+
+-- ============================================================
+-- WAYPOINTS
+-- ============================================================
+local DUNGEON_WAYPOINTS = {
+    {pos=CFrame.new(864.057,308.442,-2281.369)},
+    {pos=CFrame.new(663.821,310.375,-2280.452)},
+    {pos=CFrame.new(530.736,310.375,-2395.278)},
+    {pos=CFrame.new(529.187,320.375,-2559.292)},
+    {pos=CFrame.new(525.878,320.547,-2650.659)},
+    {pos=CFrame.new(421.200,320.457,-2725.460)},
+    {pos=Vector3.new(217.095,320.375,-2704.779)},
+    {pos=CFrame.new(108.374,344.782,-2707.636)},
+    {pos=CFrame.new(14.713,373.595,-2706.241)},
+    {pos=CFrame.new(-92.012,376.419,-2699.929)},
+    {pos=CFrame.new(-169.500,376.711,-2699.747)},
+    {pos=CFrame.new(-271.037,376.375,-2613.631)},
+    {pos=CFrame.new(-285.967,376.375,-2776.954)},
+    {pos=CFrame.new(-342.176,376.852,-2722.077)},
+    {pos=CFrame.new(-376.101,376.375,-2697.313)},
+    {pos=CFrame.new(-480.562,413.188,-2697.654)},
+    {pos=CFrame.new(-564.035,434.114,-2697.977)},
+    {pos=CFrame.new(-679.507,435.375,-2698.441)},
+    {pos=CFrame.new(-744.393,435.375,-2680.910)},
+    {pos=CFrame.new(-800.263,435.781,-2688.976)},
+    {pos=CFrame.new(-832.069,435.829,-2644.643)},
+    {pos=CFrame.new(-957.529,435.819,-2777.550)},
+    {pos=CFrame.new(-978.196,435.375,-2823.386)},
+    {pos=CFrame.new(-1075.806,435.375,-2920.543)},
+    {pos=CFrame.new(-1080.805,444.375,-3100.134)},
+    {type="patrol",posA=CFrame.new(-1182.491,444.375,-3179.820),posB=CFrame.new(-954.535,444.375,-3183.628),duration=30},
+    {pos=CFrame.new(-1080.273,447.375,-3355.000)},
+    {pos=CFrame.new(-1077.944,452.375,-3484.318)},
+    {pos=CFrame.new(-1075.926,452.944,-3596.407)},
+    {pos=CFrame.new(-1072.873,452.375,-3765.750)},
+    {pos=CFrame.new(-1074.256,463.597,-3805.134)},
+    {pos=CFrame.new(-1080.698,502.040,-3905.488)},
+    {pos=CFrame.new(-1083.563,506.375,-3986.992)},
+    {pos=CFrame.new(-1085.566,506.375,-4061.669)},
+}
+
+local function getWPPos(wp)
+    if wp.type == "patrol" then
+        local pA = typeof(wp.posA) == "CFrame" and wp.posA.Position or wp.posA
+        local pB = typeof(wp.posB) == "CFrame" and wp.posB.Position or wp.posB
+        return (pA + pB) / 2
+    end
+    return typeof(wp.pos) == "CFrame" and wp.pos.Position or wp.pos
+end
+
+local function findNearestWaypointIndex()
+    local rp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    if not rp then return 1 end
+    local pp = rp.Position
+    local bestIdx = 1
+    local bestDist = math.huge
+    for i, wp in ipairs(DUNGEON_WAYPOINTS) do
+        local d = (pp - getWPPos(wp)).Magnitude
+        if d < bestDist then bestDist = d; bestIdx = i end
+    end
+    if bestDist > 400 then return 1 end
+    return bestIdx
+end
+
+-- ============================================================
+-- FRUITS
+-- ============================================================
+local KNOWN_FRUITS = {
+    ["Mero"]=true,["Spin"]=true,["Kilo"]=true,["Venom"]=true,["Budha"]=true,
+    ["Gura"]=true,["Heal"]=true,["Mera"]=true,["Goro"]=true,["Suna"]=true,
+    ["Ito"]=true,["Paw"]=true,["Kage"]=true,["Hie"]=true,["Suke"]=true,
+    ["Tori"]=true,["Dragon"]=true,["Soul"]=true,["Magu"]=true,["Pika"]=true,
+    ["Yuki"]=true,["Ope"]=true,["Yami"]=true,["Zushi"]=true,["Kira"]=true,
+    ["Yomi"]=true,["Bomu"]=true,["Gomu"]=true,["Bari"]=true,["Horo"]=true,
+    ["Goru"]=true,["Mochi"]=true,
+}
+local SLOT_NAMES = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Zero"}
+local SLOT_KEYS = {
+    One=Enum.KeyCode.One, Two=Enum.KeyCode.Two, Three=Enum.KeyCode.Three,
+    Four=Enum.KeyCode.Four, Five=Enum.KeyCode.Five, Six=Enum.KeyCode.Six,
+    Seven=Enum.KeyCode.Seven, Eight=Enum.KeyCode.Eight, Nine=Enum.KeyCode.Nine,
+    Zero=Enum.KeyCode.Zero
+}
+local IGNORED_CHILDREN = {UIAspectRatioConstraint=true, Design=true, Number=true, HotbarObject=true}
+
+local function storeFruitNow()
+    local fsr = Events and Events:FindFirstChild("FruitStorage")
+    if not fsr then return end
+    local pg = LP:FindFirstChild("PlayerGui")
+    local hotbar = pg and pg:FindFirstChild("BackpackGui") and pg.BackpackGui:FindFirstChild("Hotbar")
+    if not hotbar then return end
+    local count = 0
+    for _, slotName in ipairs(SLOT_NAMES) do
+        local slot = hotbar:FindFirstChild(slotName)
+        if not slot then continue end
+        local fruitChild = nil
+        for _, child in ipairs(slot:GetChildren()) do
+            if not IGNORED_CHILDREN[child.Name] and KNOWN_FRUITS[child.Name] then
+                fruitChild = child; break
+            end
+        end
+        if not fruitChild then continue end
+        local key = SLOT_KEYS[slotName]
+        if not key then continue end
+        VIM:SendKeyEvent(true, key, false, nil)
+        task.wait(0.15)
+        VIM:SendKeyEvent(false, key, false, nil)
+        task.wait(0.4)
+        pcall(function() fsr:InvokeServer(true) end)
+        task.wait(0.5)
+        count = count + 1
+    end
+    return count
+end
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if not AD.autoStoreFruit or not AD.enabled then continue end
+        local pg = LP:FindFirstChild("PlayerGui")
+        local hotbar = pg and pg:FindFirstChild("BackpackGui") and pg.BackpackGui:FindFirstChild("Hotbar")
+        if not hotbar then continue end
+        local hasFruit = false
+        for _, slotName in ipairs(SLOT_NAMES) do
+            local slot = hotbar:FindFirstChild(slotName)
+            if not slot then continue end
+            for _, child in ipairs(slot:GetChildren()) do
+                if not IGNORED_CHILDREN[child.Name] and KNOWN_FRUITS[child.Name] then
+                    hasFruit = true; break
+                end
+            end
+            if hasFruit then break end
+        end
+        if hasFruit then
+            storeFruitNow()
+            task.wait(2)
+        end
+    end
+end)
+
+-- ============================================================
+-- REPLAY
+-- ============================================================
+local function onDungeonComplete()
+    local boss = findBossGlobal("Cupid Queen")
+    local alive = boss and boss:FindFirstChild("Humanoid") and boss.Humanoid.Health > 0
+    if alive then
+        task.spawn(function() fightCupidQueen(AD.loopID); onDungeonComplete() end)
+        return
+    end
+    cupidTrackActive = false
+    cupidTrackTarget = nil
+    AD.status = "replay"
+    lockedPosition = nil
+
+    if AD.autoStoreFruit then
+        task.wait(2)
+        storeFruitNow()
+        task.wait(1)
+    end
+    task.wait(7)
+
+    if not AD.autoReplay then
+        AD.status = "idle"
+        AD.enabled = false
+        if _G.MiniDungeonToggle then _G.MiniDungeonToggle:Set(false) end
+        return
+    end
+
+    pcall(function()
+        TeleportService:TeleportToPlaceInstance(6360478118, "2c6cd3f9-8a53-4cb8-9b8e-b2c8259c29c9", LP)
+    end)
+    task.wait(8)
+    AD.startDungeon()
+end
+
+-- Head to Exit
+task.spawn(function()
+    local handled = false
+    while true do
+        task.wait(1)
+        local pg = LP:FindFirstChild("PlayerGui")
+        local exitQuest = pg and pg:FindFirstChild("Objectives") and pg.Objectives:FindFirstChild("Main")
+            and pg.Objectives.Main:FindFirstChild("Head to the Exit")
+        if exitQuest and not handled then
+            handled = true
+            task.spawn(function() task.wait(5); onDungeonComplete() end)
+        end
+        if not exitQuest then handled = false end
+    end
+end)
+
+-- ============================================================
+-- START / STOP
+-- ============================================================
+AD.stopDungeon = function()
+    AD.enabled = false
+    AD.loopID = AD.loopID + 1
+    tpId = tpId + 1
+    AD.status = "idle"
+    pcall(function() blockRemote:InvokeServer(false, "Melee", false) end)
+    antiKBEnabled = false
+    lockedPosition = nil
+    if activeTpConn then activeTpConn:Disconnect(); activeTpConn = nil end
+    if invisibleFloor then invisibleFloor:Destroy(); invisibleFloor = nil end
+    VIM:SendKeyEvent(false, Enum.KeyCode.W, false, game)
+    getgenv().adSkipHit = false
+    getgenv().adCupidPhase2Permanent = false
+    cupidTrackTarget = nil
+    cupidTrackActive = false
+    if hookedBossCleanup then hookedBossCleanup() end
+    hookedBossCleanup = nil
+    hookedBossNPC = nil
+    canAttack = true
+    isTeleporting = false
+end
+
+AD.startDungeon = function()
+    if AD.enabled then return end
+    AD.enabled = true
+    AD.loopID = AD.loopID + 1
+    local loopID = AD.loopID
+    canAttack = true
+    AD.status = "idle"
+    getgenv().adSkipHit = false
+    getgenv().adCupidPhase2Permanent = false
+    antiKBEnabled = false
+    lockedPosition = nil
+    weaponEquipped = false
+
+    AD.status = "waiting"
+    for i = 10, 1, -1 do
+        if not AD.enabled or AD.loopID ~= loopID then return end
+        Library.Notify(("Auto Dungeon starts in %ds..."):format(i), 1)
+        task.wait(1)
+    end
+    if not AD.enabled or AD.loopID ~= loopID then return end
+    AD.status = "idle"
+
+    -- Nếu đang gần boss → đánh luôn
+    local cupidNearby = findBossGlobal("Cupid Queen")
+    if cupidNearby then
+        local ch = cupidNearby:FindFirstChild("HumanoidRootPart")
+        local rp0 = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if ch and rp0 and (rp0.Position - ch.Position).Magnitude < 800 then
+            task.spawn(function()
+                fightCupidQueen(loopID)
+                AD.enabled = false
+                task.spawn(onDungeonComplete)
+            end)
+            return
+        end
+    end
+
+    local leoNearby = findBossGlobal("Leo")
+    if leoNearby then
+        local lh = leoNearby:FindFirstChild("HumanoidRootPart")
+        local rp0 = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if lh and rp0 and (rp0.Position - lh.Position).Magnitude < 400 then
+            task.spawn(function()
+                fightBoss(loopID, "Leo")
+                if AD.enabled and AD.loopID == loopID then
+                    local function lm(pos)
+                        lockedPosition = nil
+                        DoSafeTeleport(pos)
+                        local r = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                        if r then lockedPosition = r.Position end
+                        task.wait(0.5)
+                    end
+                    lm(Vector3.new(-1091.291, 506.375, -4424.925))
+                    lm(Vector3.new(-1092.546, 568.555, -4497.691))
+                    lm(Vector3.new(-1092.954, 631.463, -4588.583))
+                    lm(Vector3.new(-1091.032, 639.903, -4747.583))
+                    lm(Vector3.new(-1033.052, 667.073, -5048.281))
+                    lockedPosition = nil
+                    fightCupidQueen(loopID)
+                end
+                AD.enabled = false
+                task.spawn(onDungeonComplete)
+            end)
+            return
+        end
+    end
+
+    local startIdx = findNearestWaypointIndex()
+    equipWeapon()
+
+    task.spawn(function()
+        for i = startIdx, #DUNGEON_WAYPOINTS do
+            if not AD.enabled or AD.loopID ~= loopID then break end
+            local wp = DUNGEON_WAYPOINTS[i]
+            if wp.type == "patrol" then
+                local posA = typeof(wp.posA) == "CFrame" and wp.posA.Position or wp.posA
+                local posB = typeof(wp.posB) == "CFrame" and wp.posB.Position or wp.posB
+                local dur = wp.duration or 30
+                local startT = tick()
+                local goB = true
+                while AD.enabled and AD.loopID == loopID and (tick() - startT) < dur do
+                    local t = goB and posB or posA
+                    DoSafeTeleport(t); task.wait(0.5)
+                    if not AD.enabled or AD.loopID ~= loopID then break end
+                    killAllNPCsAtPos(t, 120)
+                    goB = not goB
+                end
+            else
+                local tp = typeof(wp.pos) == "CFrame" and wp.pos.Position or wp.pos
+                DoSafeTeleport(tp); task.wait(0.5)
+                if not AD.enabled or AD.loopID ~= loopID then break end
+                killAllNPCsAtPos(tp, 120); task.wait(0.5)
+                if not AD.enabled or AD.loopID ~= loopID then break end
+                killAllNPCsAtPos(tp, 120)
+            end
+        end
+        if not AD.enabled or AD.loopID ~= loopID then return end
+
+        fightBoss(loopID, "Leo")
+        if not AD.enabled or AD.loopID ~= loopID then return end
+
+        local function lm(pos)
+            lockedPosition = nil
+            DoSafeTeleport(pos)
+            local rp2 = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if rp2 then lockedPosition = rp2.Position end
+            task.wait(0.5)
+        end
+        lm(Vector3.new(-1091.291, 506.375, -4424.925))
+        lm(Vector3.new(-1092.546, 568.555, -4497.691))
+        lm(Vector3.new(-1092.954, 631.463, -4588.583))
+        lm(Vector3.new(-1091.032, 639.903, -4747.583))
+        lm(Vector3.new(-1033.052, 667.073, -5048.281))
+        lockedPosition = nil
+        fightCupidQueen(loopID)
+
+        AD.status = "complete"
+        AD.enabled = false
+        task.spawn(onDungeonComplete)
+    end)
+end
+
+-- ============================================================
+-- BUILD UI
+-- ============================================================
+local DungeonBox = Tab:AddSection({ Name = "Auto Dungeon" })
+
+Tab:AddToggle({
+    Name    = "Enable Auto Dungeon",
+    Desc    = "Waypoints → Leo → Cupid Queen → Replay",
+    Default = false,
+    Flag    = "AutoDungeon",
+    Callback = function(v)
+        if v then AD.startDungeon() else AD.stopDungeon() end
+    end,
+})
+
+Tab:AddDropdown({
+    Name    = "Weapon",
+    Desc    = "Vũ khí dùng để đánh",
+    Options = { "Kraken Blade", "Melee" },
+    Default = "Kraken Blade",
+    Flag    = "DungeonWeapon",
+    Callback = function(v)
+        AD.weapon = v
+        weaponEquipped = false
+    end,
+})
+
+Tab:AddToggle({
+    Name    = "Auto Store Fruits",
+    Desc    = "Tự cất trái khi vào hotbar",
+    Default = true,
+    Flag    = "AutoStoreFruit",
+    Callback = function(v) AD.autoStoreFruit = v end,
+})
+
+Tab:AddToggle({
+    Name    = "Auto Replay",
+    Desc    = "Tự chạy lại sau khi xong",
+    Default = true,
+    Flag    = "AutoReplay",
+    Callback = function(v) AD.autoReplay = v end,
+})
+
+Tab:AddSlider({
+    Name    = "Tween Speed",
+    Desc    = "Tốc độ teleport (mặc định 89)",
+    Min     = 30,
+    Max     = 200,
+    Default = 89,
+    Increase= 1,
+    Flag    = "TweenSpeed",
+    Callback = function(v) AD.tweenSpeed = v end,
+})
+
+Tab:AddSlider({
+    Name    = "Up Height",
+    Desc    = "Độ cao treo trên NPC",
+    Min     = 4,
+    Max     = 20,
+    Default = 10,
+    Increase= 1,
+    Flag    = "UpHeight",
+    Callback = function(v) AD.upHeight = v end,
+})
+
+Tab:AddSection({ Name = "Utilities" })
+
+Tab:AddButton({
+    Name = "Force Store Fruit Now",
+    Desc = "Cất toàn bộ trái đang có trong hotbar",
+    Callback = function()
+        local n = storeFruitNow()
+        redzlib.Elements and Window and print("Stored:", n)
+    end,
+})
+
+Tab:AddButton({
+    Name = "Rejoin",
+    Desc = "Rejoin server hiện tại",
+    Callback = function()
+        TeleportService:Teleport(game.PlaceId, LP)
+    end,
+})
+
+-- ============================================================
+-- BOOT NOTIFY
+-- ============================================================
+Window:Dialog({
+    Title = "Mini Dungeon",
+    Text  = "Script đã load thành công!\nBật 'Enable Auto Dungeon' để bắt đầu.",
+    Options = { {"OK"} },
+})
+
+print("[Mini Dungeon] Loaded.")
