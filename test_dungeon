@@ -7,7 +7,7 @@
 local REDZLIB_URL = "https://raw.githubusercontent.com/daykits/Ui-banana.lua/refs/heads/main/UI%20tlredz" -- ← thay bằng raw link file redzlib
 
 -- === LOAD UI ===
-local redzlib = loadstring(game:HttpGet(https://raw.githubusercontent.com/daykits/Ui-banana.lua/refs/heads/main/UI%20tlredz))()
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/daykits/Ui-banana.lua/refs/heads/main/UI%20tlredz"))()
 
 local Window = redzlib:MakeWindow({
     Name    = "Mini Dungeon",
