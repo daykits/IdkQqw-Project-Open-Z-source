@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
@@ -17,14 +18,16 @@ if oldGui then oldGui:Destroy() end
 --// STATE
 local SpeedOverrideEnabled = false
 local NoclipEnabled = false
+local FlyEnabled = false
 local isFloating = false
 local autoTeamEnabled = false
 local espEnabled = false
 local activeTween = nil
 local TargetSpeed = 100
+local FlySpeed = 50
 local skyPosition = Vector3.new(-184.15, 1035.19, -68.42)
 local skyPositionAlt = Vector3.new(415.39, 991.87, 380.38)
-local backroomPos = Vector3.new(-292.18, 1103.47, 70.08) -- Tọa độ né map backroom
+local backroomPos = Vector3.new(-292.18, 1103.47, 70.08)
 local MenuOpen = true
 
 --// COLORS
@@ -69,8 +72,8 @@ MenuStroke.Parent = MenuButton
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 240, 0, 250) -- Tăng chiều cao để chứa nút mới
-MainFrame.Position = UDim2.new(0.5, -120, 0.5, -125)
+MainFrame.Size = UDim2.new(0, 240, 0, 280) -- Tăng chiều cao để chứa nút Fly
+MainFrame.Position = UDim2.new(0.5, -120, 0.5, -140)
 MainFrame.BackgroundColor3 = BACKGROUND
 MainFrame.BackgroundTransparency = 0.35
 MainFrame.BorderSizePixel = 0
@@ -178,7 +181,7 @@ MiscCorner.Parent = MiscTab
 --// CONTENT (MAIN)
 local Content = Instance.new("Frame")
 Content.Parent = MainFrame
-Content.Size = UDim2.new(1, -20, 0, 160)
+Content.Size = UDim2.new(1, -20, 0, 190)
 Content.Position = UDim2.new(0, 10, 0, 78)
 Content.BackgroundTransparency = 1
 Content.ZIndex = 3
@@ -259,8 +262,21 @@ NoclipButton = CreateButton(Content, "Noclip : OFF", 36, function()
     end
 end)
 
+-- NÚT FLY MỚI
+local FlyButton
+FlyButton = CreateButton(Content, "Fly : OFF", 72, function()
+    FlyEnabled = not FlyEnabled
+    if FlyEnabled then
+        FlyButton.Text = "Fly : ON"
+        FlyButton.BackgroundColor3 = RED
+    else
+        FlyButton.Text = "Fly : OFF"
+        FlyButton.BackgroundColor3 = BUTTON
+    end
+end)
+
 local FloatButton
-FloatButton = CreateButton(Content, "Float : OFF", 72, function()
+FloatButton = CreateButton(Content, "Float : OFF", 108, function()
     SetFloat(not isFloating)
     if isFloating then
         FloatButton.Text = "Float : ON"
@@ -272,7 +288,7 @@ FloatButton = CreateButton(Content, "Float : OFF", 72, function()
 end)
 
 local ESPButton
-ESPButton = CreateButton(Content, "ESP Team : OFF", 108, function()
+ESPButton = CreateButton(Content, "ESP Team : OFF", 144, function()
     ToggleESP(not espEnabled)
     if espEnabled then
         ESPButton.Text = "ESP Team : ON"
@@ -321,7 +337,6 @@ SkyButton = CreateButton(MiscContent, "Bay Lên Trời & Lơ Lửng", 36, functi
     FloatButton.BackgroundColor3 = RED
 end)
 
--- NÚT NÉ MAP BACKROOM MỚI
 local BackroomButton
 BackroomButton = CreateButton(MiscContent, "Né Map Backroom", 72, function()
     TweenToPosition(backroomPos, 3)
@@ -357,8 +372,8 @@ ScaleButton = CreateButton(MiscContent, "GUI Scale : 1.0x", 144, function()
     if ScaleIndex > #ScaleOptions then ScaleIndex = 1 end
     local Scale = ScaleOptions[ScaleIndex]
     ScaleButton.Text = "GUI Scale : " .. Scale .. "x"
-    MainFrame.Size = UDim2.new(0, 240 * Scale, 0, 250 * Scale)
-    MainFrame.Position = UDim2.new(0.5, -(120 * Scale), 0.5, -(125 * Scale))
+    MainFrame.Size = UDim2.new(0, 240 * Scale, 0, 280 * Scale)
+    MainFrame.Position = UDim2.new(0.5, -(120 * Scale), 0.5, -(140 * Scale))
 end)
 
 --// TAB SWITCHING
@@ -405,6 +420,59 @@ RunService.Stepped:Connect(function()
         local _, hum, _ = GetCharacterParts()
         if hum and hum.WalkSpeed ~= TargetSpeed then
             hum.WalkSpeed = TargetSpeed
+        end
+    end
+end)
+
+-- Fly Loop Logic
+local flyBV = nil
+local flyBG = nil
+local flyConn = nil
+
+RunService.Heartbeat:Connect(function()
+    if FlyEnabled then
+        local char, hum, hrp = GetCharacterParts()
+        if not char or not hum or not hrp or hum.Health <= 0 then
+            if flyBV then flyBV:Destroy(); flyBV = nil end
+            if flyBG then flyBG:Destroy(); flyBG = nil end
+            return
+        end
+        
+        if not flyBV then
+            flyBV = Instance.new("BodyVelocity")
+            flyBV.Name = "FlyVelocity"
+            flyBV.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+            flyBV.Velocity = Vector3.zero
+            flyBV.Parent = hrp
+        end
+        
+        if not flyBG then
+            flyBG = Instance.new("BodyGyro")
+            flyBG.Name = "FlyGyro"
+            flyBG.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+            flyBG.P = 1000
+            flyBG.Parent = hrp
+        end
+
+        local cam = workspace.CurrentCamera
+        local moveDir = Vector3.zero
+        
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir += cam.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir -= cam.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir -= cam.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir += cam.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0, 1, 0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir -= Vector3.new(0, 1, 0) end
+        
+        flyBV.Velocity = moveDir.Magnitude > 0 and (moveDir.Unit * FlySpeed) or Vector3.zero
+        flyBG.CFrame = cam.CFrame
+        hum.PlatformStand = true
+    else
+        if flyBV then flyBV:Destroy(); flyBV = nil end
+        if flyBG then flyBG:Destroy(); flyBG = nil end
+        local _, hum, _ = GetCharacterParts()
+        if hum and hum.PlatformStand and not isFloating then
+            hum.PlatformStand = false
         end
     end
 end)
@@ -488,10 +556,14 @@ local function CreateESP(player)
         while espEnabled and player.Parent do
             local char = player.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            if hrp then
+            
+            local localChar = LocalPlayer.Character
+            local localHrp = localChar and localChar:FindFirstChild("HumanoidRootPart")
+
+            if hrp and localHrp then
                 espBox.Adornee = hrp
                 espName.Adornee = hrp
-                local distance = math.floor((LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position - hrp.Position).Magnitude or 0)
+                local distance = math.floor((localHrp.Position - hrp.Position).Magnitude or 0)
                 textLabel.Text = string.format("%s [%dm]", player.Name, distance)
                 local isEnemy = (LocalPlayer.Team ~= nil and player.Team ~= nil and LocalPlayer.Team ~= player.Team)
                 local color = isEnemy and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(0, 255, 120)
@@ -631,9 +703,14 @@ LocalPlayer.CharacterAdded:Connect(function(Character)
     lastTeam = nil
     lastAutoTween = 0
     isFloating = false
+    FlyEnabled = false
     if FloatButton then
         FloatButton.Text = "Float : OFF"
         FloatButton.BackgroundColor3 = BUTTON
+    end
+    if FlyButton then
+        FlyButton.Text = "Fly : OFF"
+        FlyButton.BackgroundColor3 = BUTTON
     end
     if SpeedOverrideEnabled then
         local Humanoid = Character:FindFirstChildOfClass("Humanoid")
@@ -646,4 +723,4 @@ LocalPlayer.CharacterAdded:Connect(function(Character)
     end
 end)
 
-print("DATKITS HUB PREMIUM loaded (No Anti-Hit).")
+print("DATKITS HUB PREMIUM loaded (With Fly).")
