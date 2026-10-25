@@ -265,7 +265,7 @@ NoclipButton = CreateButton(Content, "Noclip : OFF", 36, function()
     end
 end)
 
--- NÚT FLY MỚI
+-- NÚT FLY
 local FlyButton
 FlyButton = CreateButton(Content, "Fly : OFF", 72, function()
     FlyEnabled = not FlyEnabled
@@ -463,7 +463,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==========================================
--- FLY LOGIC (EDGEIY INFINITE YIELD STYLE)
+-- FLY LOGIC (CHUẨN INFINITE YIELD)
 -- ==========================================
 local FlyBV = nil
 local FlyBG = nil
@@ -516,6 +516,8 @@ FlyDownBtn.MouseButton1Down:Connect(function() FlyDown = true end)
 FlyDownBtn.MouseButton1Up:Connect(function() FlyDown = false end)
 FlyDownBtn.MouseLeave:Connect(function() FlyDown = false end)
 
+local FlyConnection = nil
+
 local function StartFly()
     local char, hum, hrp = GetCharacterParts()
     if not char or not hum or not hrp then return end
@@ -535,16 +537,13 @@ local function StartFly()
     FlyBG.P = 1000
     FlyBG.Parent = hrp
     
-    -- Hiển thị nút bay trên điện thoại
     if UserInputService.TouchEnabled then
         FlyUpBtn.Visible = true
         FlyDownBtn.Visible = true
     end
     
     FlyConnection = RunService.RenderStepped:Connect(function()
-        if not IsFlying or not hrp or not hrp.Parent then
-            return
-        end
+        if not IsFlying or not hrp or not hrp.Parent then return end
         
         local cam = Workspace.CurrentCamera
         local moveDir = hum.MoveDirection
@@ -555,9 +554,10 @@ local function StartFly()
         if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0, 1, 0) end
         if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir -= Vector3.new(0, 1, 0) end
         
+        -- CHUẨN INFINITE YIELD: Tính toán hướng bay dựa trên RightVector và LookVector của Camera
         if moveDir.Magnitude > 0 then
-            local relativeDir = cam.CFrame:VectorToWorldSpace(moveDir)
-            FlyBV.Velocity = relativeDir.Unit * FlySpeed
+            local flyVector = (cam.CFrame.LookVector * moveDir.Z) + (cam.CFrame.RightVector * moveDir.X) + Vector3.new(0, moveDir.Y, 0)
+            FlyBV.Velocity = flyVector.Unit * FlySpeed
         else
             FlyBV.Velocity = Vector3.zero
         end
