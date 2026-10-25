@@ -30,6 +30,15 @@ local skyPositionAlt = Vector3.new(415.39, 991.87, 380.38)
 local backroomPos = Vector3.new(-292.18, 1103.47, 70.08)
 local MenuOpen = true
 
+--// NOCLIP VARIABLES (Infinite Yield Style)
+local NOCLIP_STATES = {
+    LowerTorso = true,
+    UpperTorso = true,
+    HumanoidRootPart = true
+}
+local noclipConn = nil
+local lastNoclipCheck = 0
+
 --// COLORS
 local RED = Color3.fromRGB(220, 40, 55)
 local LIGHT_RED = Color3.fromRGB(255, 130, 140)
@@ -227,6 +236,32 @@ local function CreateButton(parent, text, posY, callback)
     return btn
 end
 
+--// NOCLIP LOGIC (EdgeIY Style)
+local function NoclipLoop()
+    if NoclipEnabled and LocalPlayer.Character then
+        for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
+            if child:IsA("BasePart") and child.CanCollide and NOCLIP_STATES[child.Name] then
+                child.CanCollide = false
+            end
+        end
+    end
+end
+
+local function RestoreNoclip()
+    if LocalPlayer.Character then
+        for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
+            if child:IsA("BasePart") and not child.CanCollide and NOCLIP_STATES[child.Name] then
+                child.CanCollide = true
+            end
+        end
+        -- Đưa nhân vật về trạng thái đứng để tránh bị gập ghềnh/kẹt sàn
+        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+    end
+end
+
 --// KHAI BÁO CÁC NÚT BẤM
 local SpeedButton
 SpeedButton = CreateButton(Content, "Speed (100) : OFF", 0, function()
@@ -253,12 +288,7 @@ NoclipButton = CreateButton(Content, "Noclip : OFF", 36, function()
     else
         NoclipButton.Text = "Noclip : OFF"
         NoclipButton.BackgroundColor3 = BUTTON
-        local Character = LocalPlayer.Character
-        if Character then
-            for _, part in ipairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") then part.CanCollide = true end
-            end
-        end
+        RestoreNoclip()
     end
 end)
 
@@ -402,15 +432,10 @@ local function GetCharacterParts()
     return char, char:FindFirstChildOfClass("Humanoid"), char:FindFirstChild("HumanoidRootPart")
 end
 
--- Noclip Loop
-RunService.Heartbeat:Connect(function()
+-- Noclip Loop (Sử dụng EdgeIY)
+RunService.Stepped:Connect(function()
     if NoclipEnabled then
-        local Character = LocalPlayer.Character
-        if Character then
-            for _, part in ipairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") then part.CanCollide = false end
-            end
-        end
+        NoclipLoop()
     end
 end)
 
@@ -472,15 +497,12 @@ RunService.Heartbeat:Connect(function()
         end
 
         local cam = workspace.CurrentCamera
-        local moveDir = hum.MoveDirection -- Lấy hướng di chuyển từ Joystick (Mobile) hoặc WASD (PC)
+        local moveDir = hum.MoveDirection
         
-        -- Hỗ trợ phím Space/Shift trên PC
         if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0, 1, 0) end
         if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir -= Vector3.new(0, 1, 0) end
         
-        -- Nếu đang dùng Mobile (không bấm WASD), moveDir sẽ lấy từ Joystick
         if moveDir.Magnitude > 0 then
-            -- Nếu Joystick đẩy lên, bay theo hướng Camera
             local relativeDir = cam.CFrame:VectorToWorldSpace(moveDir)
             flyBV.Velocity = relativeDir.Unit * FlySpeed
         else
@@ -733,6 +755,11 @@ LocalPlayer.CharacterAdded:Connect(function(Character)
         FlyButton.Text = "Fly : OFF"
         FlyButton.BackgroundColor3 = BUTTON
     end
+    -- Nếu đang bật Noclip thì tự động áp dụng lại sau khi hồi sinh
+    if NoclipEnabled then
+        task.wait(1)
+        NoclipLoop()
+    end
 end)
 
-print("DATKITS HUB PREMIUM loaded (Fixed Speed & Mobile Fly).")
+print("DATKITS HUB PREMIUM loaded (Fixed Noclip & Speed & Mobile Fly).")
