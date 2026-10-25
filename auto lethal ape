@@ -3,6 +3,7 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -30,14 +31,12 @@ local skyPositionAlt = Vector3.new(415.39, 991.87, 380.38)
 local backroomPos = Vector3.new(-292.18, 1103.47, 70.08)
 local MenuOpen = true
 
---// NOCLIP VARIABLES (Infinite Yield Style)
+--// NOCLIP VARIABLES (EdgeIY Style)
 local NOCLIP_STATES = {
     LowerTorso = true,
     UpperTorso = true,
     HumanoidRootPart = true
 }
-local noclipConn = nil
-local lastNoclipCheck = 0
 
 --// COLORS
 local RED = Color3.fromRGB(220, 40, 55)
@@ -236,32 +235,6 @@ local function CreateButton(parent, text, posY, callback)
     return btn
 end
 
---// NOCLIP LOGIC (EdgeIY Style)
-local function NoclipLoop()
-    if NoclipEnabled and LocalPlayer.Character then
-        for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
-            if child:IsA("BasePart") and child.CanCollide and NOCLIP_STATES[child.Name] then
-                child.CanCollide = false
-            end
-        end
-    end
-end
-
-local function RestoreNoclip()
-    if LocalPlayer.Character then
-        for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
-            if child:IsA("BasePart") and not child.CanCollide and NOCLIP_STATES[child.Name] then
-                child.CanCollide = true
-            end
-        end
-        -- Đưa nhân vật về trạng thái đứng để tránh bị gập ghềnh/kẹt sàn
-        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum:ChangeState(Enum.HumanoidStateType.GettingUp)
-        end
-    end
-end
-
 --// KHAI BÁO CÁC NÚT BẤM
 local SpeedButton
 SpeedButton = CreateButton(Content, "Speed (100) : OFF", 0, function()
@@ -432,14 +405,38 @@ local function GetCharacterParts()
     return char, char:FindFirstChildOfClass("Humanoid"), char:FindFirstChild("HumanoidRootPart")
 end
 
--- Noclip Loop (Sử dụng EdgeIY)
+-- Noclip Loop (EdgeIY Style)
+local function NoclipLoop()
+    if NoclipEnabled and LocalPlayer.Character then
+        for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
+            if child:IsA("BasePart") and child.CanCollide and NOCLIP_STATES[child.Name] then
+                child.CanCollide = false
+            end
+        end
+    end
+end
+
+local function RestoreNoclip()
+    if LocalPlayer.Character then
+        for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
+            if child:IsA("BasePart") and not child.CanCollide and NOCLIP_STATES[child.Name] then
+                child.CanCollide = true
+            end
+        end
+        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+    end
+end
+
 RunService.Stepped:Connect(function()
     if NoclipEnabled then
         NoclipLoop()
     end
 end)
 
--- Speed Loop Logic (SỬA LỖI: Dùng BodyVelocity để chống Anti-Cheat của Server)
+-- Speed Loop Logic
 local speedBV = nil
 RunService.RenderStepped:Connect(function()
     if SpeedOverrideEnabled then
@@ -465,58 +462,136 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Fly Loop Logic (SỬA LỖI: Hỗ trợ cả PC và Mobile)
-local flyBV = nil
-local flyBG = nil
+-- ==========================================
+-- FLY LOGIC (EDGEIY INFINITE YIELD STYLE)
+-- ==========================================
+local FlyBV = nil
+local FlyBG = nil
+local IsFlying = false
+local FlyUp = false
+local FlyDown = false
 
-RunService.Heartbeat:Connect(function()
-    if FlyEnabled then
-        local char, hum, hrp = GetCharacterParts()
-        if not char or not hum or not hrp or hum.Health <= 0 then
-            if flyBV then flyBV:Destroy(); flyBV = nil end
-            if flyBG then flyBG:Destroy(); flyBG = nil end
+-- Tạo nút bay lên/xuống cho điện thoại (Mobile)
+local MobileFlyGui = Instance.new("ScreenGui")
+MobileFlyGui.Name = "MobileFlyUI"
+MobileFlyGui.ResetOnSpawn = false
+MobileFlyGui.Parent = targetParent
+
+local FlyUpBtn = Instance.new("TextButton")
+FlyUpBtn.Parent = MobileFlyGui
+FlyUpBtn.Size = UDim2.new(0, 60, 0, 60)
+FlyUpBtn.Position = UDim2.new(0, 20, 0.6, 0)
+FlyUpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+FlyUpBtn.Text = "↑"
+FlyUpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FlyUpBtn.TextSize = 30
+FlyUpBtn.Font = Enum.Font.GothamBold
+FlyUpBtn.Visible = false
+FlyUpBtn.AutoButtonColor = false
+
+local FlyDownBtn = Instance.new("TextButton")
+FlyDownBtn.Parent = MobileFlyGui
+FlyDownBtn.Size = UDim2.new(0, 60, 0, 60)
+FlyDownBtn.Position = UDim2.new(0, 20, 0.7, 0)
+FlyDownBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+FlyDownBtn.Text = "↓"
+FlyDownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FlyDownBtn.TextSize = 30
+FlyDownBtn.Font = Enum.Font.GothamBold
+FlyDownBtn.Visible = false
+FlyDownBtn.AutoButtonColor = false
+
+local UICornerUp = Instance.new("UICorner")
+UICornerUp.CornerRadius = UDim.new(1, 0)
+UICornerUp.Parent = FlyUpBtn
+local UICornerDown = Instance.new("UICorner")
+UICornerDown.CornerRadius = UDim.new(1, 0)
+UICornerDown.Parent = FlyDownBtn
+
+FlyUpBtn.MouseButton1Down:Connect(function() FlyUp = true end)
+FlyUpBtn.MouseButton1Up:Connect(function() FlyUp = false end)
+FlyUpBtn.MouseLeave:Connect(function() FlyUp = false end)
+
+FlyDownBtn.MouseButton1Down:Connect(function() FlyDown = true end)
+FlyDownBtn.MouseButton1Up:Connect(function() FlyDown = false end)
+FlyDownBtn.MouseLeave:Connect(function() FlyDown = false end)
+
+local function StartFly()
+    local char, hum, hrp = GetCharacterParts()
+    if not char or not hum or not hrp then return end
+    
+    IsFlying = true
+    hum.PlatformStand = true
+    
+    FlyBV = Instance.new("BodyVelocity")
+    FlyBV.Name = "FlyVelocity"
+    FlyBV.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    FlyBV.Velocity = Vector3.zero
+    FlyBV.Parent = hrp
+    
+    FlyBG = Instance.new("BodyGyro")
+    FlyBG.Name = "FlyGyro"
+    FlyBG.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+    FlyBG.P = 1000
+    FlyBG.Parent = hrp
+    
+    -- Hiển thị nút bay trên điện thoại
+    if UserInputService.TouchEnabled then
+        FlyUpBtn.Visible = true
+        FlyDownBtn.Visible = true
+    end
+    
+    FlyConnection = RunService.RenderStepped:Connect(function()
+        if not IsFlying or not hrp or not hrp.Parent then
             return
         end
         
-        hum.PlatformStand = true
-
-        if not flyBV then
-            flyBV = Instance.new("BodyVelocity")
-            flyBV.Name = "FlyVelocity"
-            flyBV.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-            flyBV.Velocity = Vector3.zero
-            flyBV.Parent = hrp
-        end
-        
-        if not flyBG then
-            flyBG = Instance.new("BodyGyro")
-            flyBG.Name = "FlyGyro"
-            flyBG.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
-            flyBG.P = 1000
-            flyBG.Parent = hrp
-        end
-
-        local cam = workspace.CurrentCamera
+        local cam = Workspace.CurrentCamera
         local moveDir = hum.MoveDirection
+        
+        if FlyUp then moveDir += Vector3.new(0, 1, 0) end
+        if FlyDown then moveDir -= Vector3.new(0, 1, 0) end
         
         if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0, 1, 0) end
         if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir -= Vector3.new(0, 1, 0) end
         
         if moveDir.Magnitude > 0 then
             local relativeDir = cam.CFrame:VectorToWorldSpace(moveDir)
-            flyBV.Velocity = relativeDir.Unit * FlySpeed
+            FlyBV.Velocity = relativeDir.Unit * FlySpeed
         else
-            flyBV.Velocity = Vector3.zero
+            FlyBV.Velocity = Vector3.zero
         end
         
-        flyBG.CFrame = cam.CFrame
-    else
-        if flyBV then flyBV:Destroy(); flyBV = nil end
-        if flyBG then flyBG:Destroy(); flyBG = nil end
-        local _, hum, _ = GetCharacterParts()
-        if hum and hum.PlatformStand and not isFloating then
-            hum.PlatformStand = false
-        end
+        FlyBG.CFrame = cam.CFrame
+    end)
+end
+
+local function StopFly()
+    IsFlying = false
+    FlyUp = false
+    FlyDown = false
+    
+    if FlyConnection then
+        FlyConnection:Disconnect()
+        FlyConnection = nil
+    end
+    if FlyBV then FlyBV:Destroy(); FlyBV = nil end
+    if FlyBG then FlyBG:Destroy(); FlyBG = nil end
+    
+    local _, hum, _ = GetCharacterParts()
+    if hum then
+        hum.PlatformStand = false
+    end
+    
+    FlyUpBtn.Visible = false
+    FlyDownBtn.Visible = false
+end
+
+RunService.Heartbeat:Connect(function()
+    if FlyEnabled and not IsFlying then
+        StartFly()
+    elseif not FlyEnabled and IsFlying then
+        StopFly()
     end
 end)
 
@@ -755,11 +830,10 @@ LocalPlayer.CharacterAdded:Connect(function(Character)
         FlyButton.Text = "Fly : OFF"
         FlyButton.BackgroundColor3 = BUTTON
     end
-    -- Nếu đang bật Noclip thì tự động áp dụng lại sau khi hồi sinh
     if NoclipEnabled then
         task.wait(1)
         NoclipLoop()
     end
 end)
 
-print("DATKITS HUB PREMIUM loaded (Fixed Noclip & Speed & Mobile Fly).")
+print("DATKITS HUB PREMIUM loaded (Fixed Noclip & EdgeIY Fly).")
