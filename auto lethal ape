@@ -48,7 +48,7 @@ local TEXT = Color3.fromRGB(240, 240, 245)
 
 --// GUI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DATKITS HUB PREMIUM"
+ScreenGui.Name = "CHATGPT X BTM"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = targetParent
@@ -131,7 +131,7 @@ Title.Parent = TopBar
 Title.Size = UDim2.new(0, 145, 0, 30)
 Title.Position = UDim2.new(0, 42, 0, 5)
 Title.BackgroundTransparency = 1
-Title.Text = "DATKITS HUB PREMIUM"
+Title.Text = "CHATGPT X BTM"
 Title.TextColor3 = LIGHT_RED
 Title.TextSize = 15
 Title.Font = Enum.Font.GothamBold
@@ -836,4 +836,4 @@ LocalPlayer.CharacterAdded:Connect(function(Character)
     end
 end)
 
-print("DATKITS HUB PREMIUM loaded (Fixed Noclip & EdgeIY Fly).")
+print("CHATGPT X BTM loaded (Fixed Noclip & EdgeIY Fly).")
