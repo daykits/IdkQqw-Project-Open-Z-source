@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Script Tổng Hợp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%);
+            padding: 20px;
+        }
+
+        .menu-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .menu-title {
+            text-align: center;
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .menu-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(180deg, #00d2ff, #3a7bd5);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+
+        .menu-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.2));
+            border-color: rgba(0, 210, 255, 0.3);
+        }
+
+        .menu-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .menu-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .icon-script1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .icon-script2 {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: #fff;
+        }
+
+        .menu-item:hover .menu-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .menu-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .menu-name {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .menu-desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+        }
+
+        .menu-arrow {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover .menu-arrow {
+            color: #00d2ff;
+            transform: translateX(3px);
+        }
+
+        /* Toast thông báo */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.3);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Animation khi click */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.97); }
+            100% { transform: scale(1); }
+        }
+
+        .menu-item.clicked {
+            animation: pulse 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-container">
+        <h2 class="menu-title">📋 MENU SCRIPT</h2>
+
+        <div class="menu-item" onclick="runScript(1, 'Script Auto Farm')">
+            <div class="menu-icon icon-script1">⚡</div>
+            <div class="menu-content">
+                <div class="menu-name">Script Auto Farm</div>
+                <div class="menu-desc">Tự động farm tài nguyên</div>
+            </div>
+            <div class="menu-arrow">›</div>
+        </div>
+
+        <div class="menu-item" onclick="runScript(2, 'Script Auto Quest')">
+            <div class="menu-icon icon-script2">🎯</div>
+            <div class="menu-content">
+                <div class="menu-name">Script Auto Quest</div>
+                <div class="menu-desc">Tự động làm nhiệm vụ</div>
+            </div>
+            <div class="menu-arrow">›</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================
+        // ĐỊNH NGHĨA CÁC SCRIPT Ở ĐÂY
+        // ============================================
+
+const scripts = {
+    1: {
+        name: 'Script bananacat hub cracked',
+        run: function() {
+            console.log('🚀 Đang chạy Script Auto Farm...');
+            
+            // Dán loadstring vào đây:
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykits_banana"))();
+        }
+    },
+    2: {
+        name: 'Script nighthop cracked',
+        run: function() {
+            console.log('🚀 Đang chạy Script Auto Quest...');
+            
+            // Dán loadstring vào đây:
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/daykits/TEST-ALL/refs/heads/main/cc"))();
+        }
+    }
+};
+        // ============================================
+        // HÀM XỬ LÝ KHI CLICK MENU
+        // ============================================
+
+        let toastTimeout;
+
+        function runScript(id, name) {
+            // Hiệu ứng click
+            const items = document.querySelectorAll('.menu-item');
+            const clickedItem = items[id - 1];
+            
+            // Xóa active cũ
+            items.forEach(item => item.classList.remove('active'));
+            
+            // Thêm active mới
+            clickedItem.classList.add('active');
+            clickedItem.classList.add('clicked');
+            
+            setTimeout(() => clickedItem.classList.remove('clicked'), 300);
+
+            // Hiển thị toast
+            showToast(`🚀 Đang chạy: ${name}`);
+
+            // Gọi script tương ứng
+            if (scripts[id]) {
+                try {
+                    scripts[id].run();
+                } catch (error) {
+                    console.error('Lỗi script:', error);
+                    showToast(`❌ Lỗi: ${error.message}`);
+                }
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+    </script>
+
+</body>
+</html>
