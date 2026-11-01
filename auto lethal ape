@@ -31,12 +31,9 @@ local skyPositionAlt = Vector3.new(415.39, 991.87, 380.38)
 local backroomPos = Vector3.new(-292.18, 1103.47, 70.08)
 local MenuOpen = true
 
---// NOCLIP VARIABLES (EdgeIY Style)
-local NOCLIP_STATES = {
-    LowerTorso = true,
-    UpperTorso = true,
-    HumanoidRootPart = true
-}
+-- ⬇️ FORWARD DECLARE (tránh nil value khi bấm nút)
+local StartNoclip, RestoreNoclip
+local StartFly, StopFly
 
 --// COLORS
 local RED = Color3.fromRGB(220, 40, 55)
@@ -258,6 +255,7 @@ NoclipButton = CreateButton(Content, "Noclip : OFF", 36, function()
     if NoclipEnabled then
         NoclipButton.Text = "Noclip : ON"
         NoclipButton.BackgroundColor3 = RED
+        StartNoclip()
     else
         NoclipButton.Text = "Noclip : OFF"
         NoclipButton.BackgroundColor3 = BUTTON
@@ -272,9 +270,11 @@ FlyButton = CreateButton(Content, "Fly : OFF", 72, function()
     if FlyEnabled then
         FlyButton.Text = "Fly : ON"
         FlyButton.BackgroundColor3 = RED
+        StartFly()
     else
         FlyButton.Text = "Fly : OFF"
         FlyButton.BackgroundColor3 = BUTTON
+        StopFly()
     end
 end)
 
@@ -323,7 +323,7 @@ SkyButton = CreateButton(MiscContent, "Bay Lên Trời & Lơ Lửng", 36, functi
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Exclude
     raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
-    
+
     local result = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
     if result and result.Instance then
         local color = result.Instance.Color
@@ -331,7 +331,7 @@ SkyButton = CreateButton(MiscContent, "Bay Lên Trời & Lơ Lửng", 36, functi
             hasObstacle = true
         end
     end
-    
+
     local targetPos = hasObstacle and skyPositionAlt or skyPosition
     TweenToPosition(targetPos, 3)
     task.wait(3)
@@ -405,38 +405,49 @@ local function GetCharacterParts()
     return char, char:FindFirstChildOfClass("Humanoid"), char:FindFirstChild("HumanoidRootPart")
 end
 
--- Noclip Loop (EdgeIY Style)
-local function NoclipLoop()
-    if NoclipEnabled and LocalPlayer.Character then
-        for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
-            if child:IsA("BasePart") and child.CanCollide and NOCLIP_STATES[child.Name] then
+-- ==========================================
+-- NOCLIP (EdgeIY Style — lưu part để restore đúng)
+-- ==========================================
+local NoclipParts = {}
+local NoclipConnection = nil
+
+function StartNoclip()
+    if NoclipConnection then NoclipConnection:Disconnect() end
+    NoclipParts = {}
+    NoclipConnection = RunService.Stepped:Connect(function()
+        if not NoclipEnabled then return end
+        local char = LocalPlayer.Character
+        if not char then return end
+        for _, child in pairs(char:GetDescendants()) do
+            if child:IsA("BasePart") and child.CanCollide then
                 child.CanCollide = false
+                NoclipParts[child] = true
             end
         end
+    end)
+end
+
+function RestoreNoclip()
+    if NoclipConnection then
+        NoclipConnection:Disconnect()
+        NoclipConnection = nil
+    end
+    for part, _ in pairs(NoclipParts) do
+        if typeof(part) == "Instance" and part:IsA("BasePart") and part.Parent then
+            part.CanCollide = true
+        end
+    end
+    NoclipParts = {}
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
 end
 
-local function RestoreNoclip()
-    if LocalPlayer.Character then
-        for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
-            if child:IsA("BasePart") and not child.CanCollide and NOCLIP_STATES[child.Name] then
-                child.CanCollide = true
-            end
-        end
-        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum:ChangeState(Enum.HumanoidStateType.GettingUp)
-        end
-    end
-end
-
-RunService.Stepped:Connect(function()
-    if NoclipEnabled then
-        NoclipLoop()
-    end
-end)
-
--- Speed Loop Logic
+-- ==========================================
+-- SPEED LOOP
+-- ==========================================
 local speedBV = nil
 RunService.RenderStepped:Connect(function()
     if SpeedOverrideEnabled then
@@ -463,15 +474,8 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==========================================
--- FLY LOGIC (CHUẨN INFINITE YIELD)
+-- FLY UI MOBILE (giữ nguyên nút ↑↓)
 -- ==========================================
-local FlyBV = nil
-local FlyBG = nil
-local IsFlying = false
-local FlyUp = false
-local FlyDown = false
-
--- Tạo nút bay lên/xuống cho điện thoại (Mobile)
 local MobileFlyGui = Instance.new("ScreenGui")
 MobileFlyGui.Name = "MobileFlyUI"
 MobileFlyGui.ResetOnSpawn = false
@@ -508,92 +512,130 @@ local UICornerDown = Instance.new("UICorner")
 UICornerDown.CornerRadius = UDim.new(1, 0)
 UICornerDown.Parent = FlyDownBtn
 
-FlyUpBtn.MouseButton1Down:Connect(function() FlyUp = true end)
-FlyUpBtn.MouseButton1Up:Connect(function() FlyUp = false end)
-FlyUpBtn.MouseLeave:Connect(function() FlyUp = false end)
+-- ==========================================
+-- FLY (CHUẨN EDGEIY)
+-- ==========================================
+local FLYING = false
+local QEfly = true
+local flySpeedMul = 1
+local CONTROL  = {F=0, B=0, L=0, R=0, Q=0, E=0}
+local lCONTROL = {F=0, B=0, L=0, R=0, Q=0, E=0}
+local SPEED = 0
+local flyKeyDown, flyKeyUp
+local FLYING_BG, FLYING_BV = nil, nil
 
-FlyDownBtn.MouseButton1Down:Connect(function() FlyDown = true end)
-FlyDownBtn.MouseButton1Up:Connect(function() FlyDown = false end)
-FlyDownBtn.MouseLeave:Connect(function() FlyDown = false end)
+-- Mobile buttons → map vào CONTROL
+FlyUpBtn.MouseButton1Down:Connect(function() CONTROL.Q = 1 end)
+FlyUpBtn.MouseButton1Up:Connect(function() CONTROL.Q = 0 end)
+FlyUpBtn.MouseLeave:Connect(function() CONTROL.Q = 0 end)
+FlyDownBtn.MouseButton1Down:Connect(function() CONTROL.E = -1 end)
+FlyDownBtn.MouseButton1Up:Connect(function() CONTROL.E = 0 end)
+FlyDownBtn.MouseLeave:Connect(function() CONTROL.E = 0 end)
 
-local FlyConnection = nil
+function StartFly()
+    if FLYING then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local T = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not T then return end
 
-local function StartFly()
-    local char, hum, hrp = GetCharacterParts()
-    if not char or not hum or not hrp then return end
-    
-    IsFlying = true
-    hum.PlatformStand = true
-    
-    FlyBV = Instance.new("BodyVelocity")
-    FlyBV.Name = "FlyVelocity"
-    FlyBV.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-    FlyBV.Velocity = Vector3.zero
-    FlyBV.Parent = hrp
-    
-    FlyBG = Instance.new("BodyGyro")
-    FlyBG.Name = "FlyGyro"
-    FlyBG.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
-    FlyBG.P = 1000
-    FlyBG.Parent = hrp
-    
+    FLYING = true
+
+    local BG = Instance.new("BodyGyro")
+    local BV = Instance.new("BodyVelocity")
+    BG.P = 9e4
+    BG.Parent = T
+    BV.Parent = T
+    BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    BG.CFrame = T.CFrame
+    BV.Velocity = Vector3.zero
+    BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    FLYING_BG, FLYING_BV = BG, BV
+
+    task.spawn(function()
+        repeat task.wait()
+            local camera = Workspace.CurrentCamera
+            if humanoid and humanoid.Parent then
+                humanoid.PlatformStand = true
+            end
+
+            if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+                SPEED = 50
+            elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+                SPEED = 0
+            end
+
+            if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+                BV.Velocity = ((camera.CFrame.LookVector * (CONTROL.F + CONTROL.B))
+                    + ((camera.CFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - camera.CFrame.p)) * SPEED
+                lCONTROL = {F=CONTROL.F, B=CONTROL.B, L=CONTROL.L, R=CONTROL.R}
+            elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+                BV.Velocity = ((camera.CFrame.LookVector * (lCONTROL.F + lCONTROL.B))
+                    + ((camera.CFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - camera.CFrame.p)) * SPEED
+            else
+                BV.Velocity = Vector3.zero
+            end
+            BG.CFrame = camera.CFrame
+        until not FLYING
+
+        CONTROL  = {F=0, B=0, L=0, R=0, Q=0, E=0}
+        lCONTROL = {F=0, B=0, L=0, R=0, Q=0, E=0}
+        SPEED = 0
+        if BG and BG.Parent then BG:Destroy() end
+        if BV and BV.Parent then BV:Destroy() end
+        FLYING_BG, FLYING_BV = nil, nil
+        if humanoid then humanoid.PlatformStand = false end
+    end)
+
+    if flyKeyDown then flyKeyDown:Disconnect() end
+    if flyKeyUp   then flyKeyUp:Disconnect()   end
+
+    flyKeyDown = UserInputService.InputBegan:Connect(function(input, processed)
+        if processed then return end
+        if input.KeyCode == Enum.KeyCode.W then CONTROL.F = flySpeedMul
+        elseif input.KeyCode == Enum.KeyCode.S then CONTROL.B = -flySpeedMul
+        elseif input.KeyCode == Enum.KeyCode.A then CONTROL.L = -flySpeedMul
+        elseif input.KeyCode == Enum.KeyCode.D then CONTROL.R = flySpeedMul
+        elseif input.KeyCode == Enum.KeyCode.E and QEfly then CONTROL.Q = flySpeedMul * 2
+        elseif input.KeyCode == Enum.KeyCode.Q and QEfly then CONTROL.E = -flySpeedMul * 2
+        end
+        pcall(function() Workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+    end)
+
+    flyKeyUp = UserInputService.InputEnded:Connect(function(input, processed)
+        if processed then return end
+        if input.KeyCode == Enum.KeyCode.W then CONTROL.F = 0
+        elseif input.KeyCode == Enum.KeyCode.S then CONTROL.B = 0
+        elseif input.KeyCode == Enum.KeyCode.A then CONTROL.L = 0
+        elseif input.KeyCode == Enum.KeyCode.D then CONTROL.R = 0
+        elseif input.KeyCode == Enum.KeyCode.E then CONTROL.Q = 0
+        elseif input.KeyCode == Enum.KeyCode.Q then CONTROL.E = 0
+        end
+    end)
+
     if UserInputService.TouchEnabled then
         FlyUpBtn.Visible = true
         FlyDownBtn.Visible = true
     end
-    
-    FlyConnection = RunService.RenderStepped:Connect(function()
-        if not IsFlying or not hrp or not hrp.Parent then return end
-        
-        local cam = Workspace.CurrentCamera
-        local moveDir = hum.MoveDirection
-        
-        if FlyUp then moveDir += Vector3.new(0, 1, 0) end
-        if FlyDown then moveDir -= Vector3.new(0, 1, 0) end
-        
-        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0, 1, 0) end
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir -= Vector3.new(0, 1, 0) end
-        
-        -- CHUẨN INFINITE YIELD: Tính toán hướng bay dựa trên RightVector và LookVector của Camera
-        if moveDir.Magnitude > 0 then
-            local flyVector = (cam.CFrame.LookVector * moveDir.Z) + (cam.CFrame.RightVector * moveDir.X) + Vector3.new(0, moveDir.Y, 0)
-            FlyBV.Velocity = flyVector.Unit * FlySpeed
-        else
-            FlyBV.Velocity = Vector3.zero
-        end
-        
-        FlyBG.CFrame = cam.CFrame
-    end)
 end
 
-local function StopFly()
-    IsFlying = false
-    FlyUp = false
-    FlyDown = false
-    
-    if FlyConnection then
-        FlyConnection:Disconnect()
-        FlyConnection = nil
-    end
-    if FlyBV then FlyBV:Destroy(); FlyBV = nil end
-    if FlyBG then FlyBG:Destroy(); FlyBG = nil end
-    
-    local _, hum, _ = GetCharacterParts()
-    if hum then
-        hum.PlatformStand = false
-    end
-    
+function StopFly()
+    FLYING = false
+    if flyKeyDown then flyKeyDown:Disconnect() flyKeyDown = nil end
+    if flyKeyUp   then flyKeyUp:Disconnect()   flyKeyUp   = nil end
+    CONTROL  = {F=0, B=0, L=0, R=0, Q=0, E=0}
+    lCONTROL = {F=0, B=0, L=0, R=0, Q=0, E=0}
+    SPEED = 0
+    if FLYING_BG then FLYING_BG:Destroy() FLYING_BG = nil end
+    if FLYING_BV then FLYING_BV:Destroy() FLYING_BV = nil end
+    local char = LocalPlayer.Character
+    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+    if humanoid then humanoid.PlatformStand = false end
+    pcall(function() Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
     FlyUpBtn.Visible = false
     FlyDownBtn.Visible = false
 end
-
-RunService.Heartbeat:Connect(function()
-    if FlyEnabled and not IsFlying then
-        StartFly()
-    elseif not FlyEnabled and IsFlying then
-        StopFly()
-    end
-end)
 
 -- Hàm Float
 function SetFloat(state)
@@ -674,7 +716,7 @@ local function CreateESP(player)
         while espEnabled and player.Parent do
             local char = player.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            
+
             local localChar = LocalPlayer.Character
             local localHrp = localChar and localChar:FindFirstChild("HumanoidRootPart")
 
