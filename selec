@@ -1,297 +1,237 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Script Tổng Hợp</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+-- ============================================
+-- MENU SCRIPT TỔNG HỢP - Roblox Executor (Lua)
+-- ============================================
 
-        body {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%);
-            padding: 20px;
-        }
+-- Xóa menu cũ nếu có (tránh trùng khi chạy lại)
+if game.CoreGui:FindFirstChild("ScriptMenuHub") then
+    game.CoreGui.ScriptMenuHub:Destroy()
+end
 
-        .menu-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%;
-            max-width: 380px;
-        }
-
-        .menu-title {
-            text-align: center;
-            color: #fff;
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 25px;
-            letter-spacing: 1px;
-            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .menu-title::after {
-            content: '';
-            display: block;
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-            margin: 10px auto 0;
-            border-radius: 2px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 16px 20px;
-            margin-bottom: 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .menu-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: linear-gradient(180deg, #00d2ff, #3a7bd5);
-            transform: scaleY(0);
-            transition: transform 0.3s ease;
-            border-radius: 0 3px 3px 0;
-        }
-
-        .menu-item:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateX(5px);
-        }
-
-        .menu-item:hover::before {
-            transform: scaleY(1);
-        }
-
-        .menu-item.active {
-            background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.2));
-            border-color: rgba(0, 210, 255, 0.3);
-        }
-
-        .menu-item.active::before {
-            transform: scaleY(1);
-        }
-
-        .menu-icon {
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
-
-        .icon-script1 {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-        }
-
-        .icon-script2 {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: #fff;
-        }
-
-        .menu-item:hover .menu-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        .menu-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .menu-name {
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 3px;
-        }
-
-        .menu-desc {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.75rem;
-        }
-
-        .menu-arrow {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-        }
-
-        .menu-item:hover .menu-arrow {
-            color: #00d2ff;
-            transform: translateX(3px);
-        }
-
-        /* Toast thông báo */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
-            color: #fff;
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.3);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 1000;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* Animation khi click */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.97); }
-            100% { transform: scale(1); }
-        }
-
-        .menu-item.clicked {
-            animation: pulse 0.3s ease;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="menu-container">
-        <h2 class="menu-title">📋 MENU SCRIPT</h2>
-
-        <div class="menu-item" onclick="runScript(1, 'Script Auto Farm')">
-            <div class="menu-icon icon-script1">⚡</div>
-            <div class="menu-content">
-                <div class="menu-name">Script Auto Farm</div>
-                <div class="menu-desc">Tự động farm tài nguyên</div>
-            </div>
-            <div class="menu-arrow">›</div>
-        </div>
-
-        <div class="menu-item" onclick="runScript(2, 'Script Auto Quest')">
-            <div class="menu-icon icon-script2">🎯</div>
-            <div class="menu-content">
-                <div class="menu-name">Script Auto Quest</div>
-                <div class="menu-desc">Tự động làm nhiệm vụ</div>
-            </div>
-            <div class="menu-arrow">›</div>
-        </div>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <script>
-        // ============================================
-        // ĐỊNH NGHĨA CÁC SCRIPT Ở ĐÂY
-        // ============================================
-
-const scripts = {
-    1: {
-        name: 'Script bananacat hub cracked',
-        run: function() {
-            console.log('🚀 Đang chạy Script Auto Farm...');
-            
-            // Dán loadstring vào đây:
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykits_banana"))();
-        }
+-- ============================================
+-- ĐỊNH NGHĨA CÁC SCRIPT (dán link vào đây)
+-- ============================================
+local scripts = {
+    {
+        name = "Script bananacat hub cracked",
+        desc = "Bananacat Hub",
+        icon = "⚡",
+        color = Color3.fromRGB(102, 126, 234), -- xanh tím
+        url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykits_banana"
     },
-    2: {
-        name: 'Script nighthop cracked',
-        run: function() {
-            console.log('🚀 Đang chạy Script Auto Quest...');
-            
-            // Dán loadstring vào đây:
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/daykits/TEST-ALL/refs/heads/main/cc"))();
-        }
+    {
+        name = "Script nighthop cracked",
+        desc = "Nighthop Hub",
+        icon = "🎯",
+        color = Color3.fromRGB(240, 147, 251), -- hồng
+        url  = "https://raw.githubusercontent.com/daykits/TEST-ALL/refs/heads/main/cc"
     }
-};
-        // ============================================
-        // HÀM XỬ LÝ KHI CLICK MENU
-        // ============================================
+}
 
-        let toastTimeout;
+-- ============================================
+-- TẠO GUI
+-- ============================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ScriptMenuHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = game.CoreGui
 
-        function runScript(id, name) {
-            // Hiệu ứng click
-            const items = document.querySelectorAll('.menu-item');
-            const clickedItem = items[id - 1];
-            
-            // Xóa active cũ
-            items.forEach(item => item.classList.remove('active'));
-            
-            // Thêm active mới
-            clickedItem.classList.add('active');
-            clickedItem.classList.add('clicked');
-            
-            setTimeout(() => clickedItem.classList.remove('clicked'), 300);
+-- Khung chính
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Size = UDim2.new(0, 300, 0, 90 + #scripts * 70)
+Main.Position = UDim2.new(0, 30, 0, 30)
+Main.BackgroundColor3 = Color3.fromRGB(30, 30, 47)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true -- kéo thả được
+Main.Parent = ScreenGui
 
-            // Hiển thị toast
-            showToast(`🚀 Đang chạy: ${name}`);
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 14)
+MainCorner.Parent = Main
 
-            // Gọi script tương ứng
-            if (scripts[id]) {
-                try {
-                    scripts[id].run();
-                } catch (error) {
-                    console.error('Lỗi script:', error);
-                    showToast(`❌ Lỗi: ${error.message}`);
-                }
-            }
-        }
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(60, 60, 90)
+MainStroke.Thickness = 1
+MainStroke.Parent = Main
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
+-- Tiêu đề
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "📋  MENU SCRIPT"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.TextColor3 = Color3.fromRGB(0, 210, 255)
+Title.Parent = Main
 
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2500);
-        }
-    </script>
+-- Đường gạch dưới tiêu đề
+local Line = Instance.new("Frame")
+Line.Size = UDim2.new(0, 60, 0, 3)
+Line.Position = UDim2.new(0.5, -30, 0, 40)
+Line.BackgroundColor3 = Color3.fromRGB(0, 210, 255)
+Line.BorderSizePixel = 0
+Line.Parent = Main
 
-</body>
-</html>
+local LineCorner = Instance.new("UICorner")
+LineCorner.CornerRadius = UDim.new(1, 0)
+LineCorner.Parent = Line
+
+-- ============================================
+-- HÀM TẠO NÚT
+-- ============================================
+local function createButton(data, index)
+    local Btn = Instance.new("TextButton")
+    Btn.Name = "Btn_" .. index
+    Btn.Size = UDim2.new(1, -30, 0, 58)
+    Btn.Position = UDim2.new(0, 15, 0, 55 + (index - 1) * 68)
+    Btn.BackgroundColor3 = Color3.fromRGB(45, 45, 68)
+    Btn.BorderSizePixel = 0
+    Btn.AutoButtonColor = false
+    Btn.Text = ""
+    Btn.Parent = Main
+
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 10)
+    BtnCorner.Parent = Btn
+
+    local BtnStroke = Instance.new("UIStroke")
+    BtnStroke.Color = Color3.fromRGB(60, 60, 90)
+    BtnStroke.Thickness = 1
+    BtnStroke.Parent = Btn
+
+    -- Thanh màu bên trái
+    local Accent = Instance.new("Frame")
+    Accent.Size = UDim2.new(0, 4, 1, -16)
+    Accent.Position = UDim2.new(0, 6, 0, 8)
+    Accent.BackgroundColor3 = data.color
+    Accent.BorderSizePixel = 0
+    Accent.Parent = Btn
+
+    local AccentCorner = Instance.new("UICorner")
+    AccentCorner.CornerRadius = UDim.new(1, 0)
+    AccentCorner.Parent = Accent
+
+    -- Icon
+    local Icon = Instance.new("TextLabel")
+    Icon.Size = UDim2.new(0, 40, 0, 40)
+    Icon.Position = UDim2.new(0, 18, 0.5, -20)
+    Icon.BackgroundColor3 = data.color
+    Icon.Text = data.icon
+    Icon.Font = Enum.Font.GothamBold
+    Icon.TextSize = 20
+    Icon.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Icon.Parent = Btn
+
+    local IconCorner = Instance.new("UICorner")
+    IconCorner.CornerRadius = UDim.new(0, 10)
+    IconCorner.Parent = Icon
+
+    -- Tên script
+    local Name = Instance.new("TextLabel")
+    Name.Size = UDim2.new(1, -80, 0, 22)
+    Name.Position = UDim2.new(0, 68, 0, 8)
+    Name.BackgroundTransparency = 1
+    Name.Text = data.name
+    Name.TextXAlignment = Enum.TextXAlignment.Left
+    Name.Font = Enum.Font.GothamBold
+    Name.TextSize = 13
+    Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Name.Parent = Btn
+
+    -- Mô tả
+    local Desc = Instance.new("TextLabel")
+    Desc.Size = UDim2.new(1, -80, 0, 18)
+    Desc.Position = UDim2.new(0, 68, 0, 30)
+    Desc.BackgroundTransparency = 1
+    Desc.Text = data.desc
+    Desc.TextXAlignment = Enum.TextXAlignment.Left
+    Desc.Font = Enum.Font.Gotham
+    Desc.TextSize = 11
+    Desc.TextColor3 = Color3.fromRGB(150, 150, 170)
+    Desc.Parent = Btn
+
+    -- Mũi tên
+    local Arrow = Instance.new("TextLabel")
+    Arrow.Size = UDim2.new(0, 20, 0, 20)
+    Arrow.Position = UDim2.new(1, -30, 0.5, -10)
+    Arrow.BackgroundTransparency = 1
+    Arrow.Text = "›"
+    Arrow.Font = Enum.Font.GothamBold
+    Arrow.TextSize = 22
+    Arrow.TextColor3 = Color3.fromRGB(100, 100, 130)
+    Arrow.Parent = Btn
+
+    -- Hiệu ứng hover
+    Btn.MouseEnter:Connect(function()
+        Btn.BackgroundColor3 = Color3.fromRGB(55, 55, 85)
+        BtnStroke.Color = data.color
+        Arrow.TextColor3 = data.color
+    end)
+    Btn.MouseLeave:Connect(function()
+        Btn.BackgroundColor3 = Color3.fromRGB(45, 45, 68)
+        BtnStroke.Color = Color3.fromRGB(60, 60, 90)
+        Arrow.TextColor3 = Color3.fromRGB(100, 100, 130)
+    end)
+
+    return Btn
+end
+
+-- ============================================
+-- TOAST THÔNG BÁO
+-- ============================================
+local Toast = Instance.new("TextLabel")
+Toast.Size = UDim2.new(0, 260, 0, 44)
+Toast.Position = UDim2.new(0.5, -130, 1, -60)
+Toast.BackgroundColor3 = Color3.fromRGB(0, 180, 220)
+Toast.Text = ""
+Toast.Font = Enum.Font.GothamBold
+Toast.TextSize = 13
+Toast.TextColor3 = Color3.fromRGB(255, 255, 255)
+Toast.Visible = false
+Toast.Parent = ScreenGui
+
+local ToastCorner = Instance.new("UICorner")
+ToastCorner.CornerRadius = UDim.new(0, 10)
+ToastCorner.Parent = Toast
+
+local toastToken = 0
+local function showToast(msg)
+    toastToken = toastToken + 1
+    local myToken = toastToken
+    Toast.Text = msg
+    Toast.Visible = true
+    task.delay(2.5, function()
+        if toastToken == myToken then
+            Toast.Visible = false
+        end
+    end)
+end
+
+-- ============================================
+-- CHẠY SCRIPT KHI CLICK
+-- ============================================
+local function runScript(data)
+    showToast("🚀 Đang chạy: " .. data.name)
+    task.spawn(function()
+        local ok, err = pcall(function()
+            loadstring(game:HttpGet(data.url))()
+        end)
+        if not ok then
+            showToast("❌ Lỗi: " .. tostring(err))
+            warn("[Menu Script] Lỗi khi chạy " .. data.name .. ": " .. tostring(err))
+        end
+    end)
+end
+
+-- Tạo các nút
+for i, data in ipairs(scripts) do
+    local btn = createButton(data, i)
+    btn.MouseButton1Click:Connect(function()
+        runScript(data)
+    end)
+end
+
+showToast("✅ Menu đã load thành công!")
