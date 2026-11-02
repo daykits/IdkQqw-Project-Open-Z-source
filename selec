@@ -2,33 +2,29 @@
 -- MENU SCRIPT TỔNG HỢP - Roblox Executor (Lua)
 -- ============================================
 
--- Xóa menu cũ nếu có (tránh trùng khi chạy lại)
 if game.CoreGui:FindFirstChild("ScriptMenuHub") then
     game.CoreGui.ScriptMenuHub:Destroy()
 end
 
--- ============================================
--- ĐỊNH NGHĨA CÁC SCRIPT (dán link vào đây)
--- ============================================
 local scripts = {
     {
         name = "Script bananacat hub cracked",
         desc = "Bananacat Hub",
         icon = "⚡",
-        color = Color3.fromRGB(102, 126, 234), -- xanh tím
+        color = Color3.fromRGB(102, 126, 234),
         url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykits_banana"
     },
     {
         name = "Script nighthop cracked",
         desc = "Nighthop Hub",
         icon = "🎯",
-        color = Color3.fromRGB(240, 147, 251), -- hồng
+        color = Color3.fromRGB(240, 147, 251),
         url  = "https://raw.githubusercontent.com/daykits/TEST-ALL/refs/heads/main/cc"
     }
 }
 
 -- ============================================
--- TẠO GUI
+-- GUI
 -- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ScriptMenuHub"
@@ -36,7 +32,6 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = game.CoreGui
 
--- Khung chính
 local Main = Instance.new("Frame")
 Main.Name = "Main"
 Main.Size = UDim2.new(0, 300, 0, 90 + #scripts * 70)
@@ -44,7 +39,7 @@ Main.Position = UDim2.new(0, 30, 0, 30)
 Main.BackgroundColor3 = Color3.fromRGB(30, 30, 47)
 Main.BorderSizePixel = 0
 Main.Active = true
-Main.Draggable = true -- kéo thả được
+Main.Draggable = true
 Main.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
@@ -58,10 +53,11 @@ MainStroke.Parent = Main
 
 -- Tiêu đề
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 45)
-Title.Position = UDim2.new(0, 0, 0, 0)
+Title.Size = UDim2.new(1, -50, 0, 45)
+Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Text = "📋  MENU SCRIPT"
+Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
 Title.TextColor3 = Color3.fromRGB(0, 210, 255)
@@ -70,7 +66,7 @@ Title.Parent = Main
 -- Đường gạch dưới tiêu đề
 local Line = Instance.new("Frame")
 Line.Size = UDim2.new(0, 60, 0, 3)
-Line.Position = UDim2.new(0.5, -30, 0, 40)
+Line.Position = UDim2.new(0, 15, 0, 40)
 Line.BackgroundColor3 = Color3.fromRGB(0, 210, 255)
 Line.BorderSizePixel = 0
 Line.Parent = Main
@@ -80,7 +76,58 @@ LineCorner.CornerRadius = UDim.new(1, 0)
 LineCorner.Parent = Line
 
 -- ============================================
--- HÀM TẠO NÚT
+-- NÚT X (ĐÓNG MENU)
+-- ============================================
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -40, 0, 10)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 90)
+CloseBtn.BorderSizePixel = 0
+CloseBtn.AutoButtonColor = false
+CloseBtn.Text = "✕"
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 16
+CloseBtn.TextColor3 = Color3.fromRGB(200, 200, 220)
+CloseBtn.Parent = Main
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 8)
+CloseCorner.Parent = CloseBtn
+
+local CloseStroke = Instance.new("UIStroke")
+CloseStroke.Color = Color3.fromRGB(80, 80, 110)
+CloseStroke.Thickness = 1
+CloseStroke.Parent = CloseBtn
+
+-- Hover đổi sang đỏ
+CloseBtn.MouseEnter:Connect(function()
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 70)
+    CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseStroke.Color = Color3.fromRGB(255, 90, 110)
+end)
+CloseBtn.MouseLeave:Connect(function()
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 90)
+    CloseBtn.TextColor3 = Color3.fromRGB(200, 200, 220)
+    CloseStroke.Color = Color3.fromRGB(80, 80, 110)
+end)
+
+-- Hiệu ứng thu nhỏ rồi biến mất khi click X
+CloseBtn.MouseButton1Click:Connect(function()
+    local tweenService = game:GetService("TweenService")
+    local shrink = tweenService:Create(
+        Main,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0) }
+    )
+    shrink:Play()
+    shrink.Completed:Connect(function()
+        ScreenGui:Destroy()
+    end)
+end)
+
+-- ============================================
+-- TẠO NÚT SCRIPT
 -- ============================================
 local function createButton(data, index)
     local Btn = Instance.new("TextButton")
@@ -102,7 +149,6 @@ local function createButton(data, index)
     BtnStroke.Thickness = 1
     BtnStroke.Parent = Btn
 
-    -- Thanh màu bên trái
     local Accent = Instance.new("Frame")
     Accent.Size = UDim2.new(0, 4, 1, -16)
     Accent.Position = UDim2.new(0, 6, 0, 8)
@@ -114,7 +160,6 @@ local function createButton(data, index)
     AccentCorner.CornerRadius = UDim.new(1, 0)
     AccentCorner.Parent = Accent
 
-    -- Icon
     local Icon = Instance.new("TextLabel")
     Icon.Size = UDim2.new(0, 40, 0, 40)
     Icon.Position = UDim2.new(0, 18, 0.5, -20)
@@ -129,7 +174,6 @@ local function createButton(data, index)
     IconCorner.CornerRadius = UDim.new(0, 10)
     IconCorner.Parent = Icon
 
-    -- Tên script
     local Name = Instance.new("TextLabel")
     Name.Size = UDim2.new(1, -80, 0, 22)
     Name.Position = UDim2.new(0, 68, 0, 8)
@@ -141,7 +185,6 @@ local function createButton(data, index)
     Name.TextColor3 = Color3.fromRGB(255, 255, 255)
     Name.Parent = Btn
 
-    -- Mô tả
     local Desc = Instance.new("TextLabel")
     Desc.Size = UDim2.new(1, -80, 0, 18)
     Desc.Position = UDim2.new(0, 68, 0, 30)
@@ -153,7 +196,6 @@ local function createButton(data, index)
     Desc.TextColor3 = Color3.fromRGB(150, 150, 170)
     Desc.Parent = Btn
 
-    -- Mũi tên
     local Arrow = Instance.new("TextLabel")
     Arrow.Size = UDim2.new(0, 20, 0, 20)
     Arrow.Position = UDim2.new(1, -30, 0.5, -10)
@@ -164,7 +206,6 @@ local function createButton(data, index)
     Arrow.TextColor3 = Color3.fromRGB(100, 100, 130)
     Arrow.Parent = Btn
 
-    -- Hiệu ứng hover
     Btn.MouseEnter:Connect(function()
         Btn.BackgroundColor3 = Color3.fromRGB(55, 55, 85)
         BtnStroke.Color = data.color
@@ -180,7 +221,7 @@ local function createButton(data, index)
 end
 
 -- ============================================
--- TOAST THÔNG BÁO
+-- TOAST
 -- ============================================
 local Toast = Instance.new("TextLabel")
 Toast.Size = UDim2.new(0, 260, 0, 44)
@@ -211,7 +252,7 @@ local function showToast(msg)
 end
 
 -- ============================================
--- CHẠY SCRIPT KHI CLICK
+-- CHẠY SCRIPT
 -- ============================================
 local function runScript(data)
     showToast("🚀 Đang chạy: " .. data.name)
@@ -226,7 +267,6 @@ local function runScript(data)
     end)
 end
 
--- Tạo các nút
 for i, data in ipairs(scripts) do
     local btn = createButton(data, i)
     btn.MouseButton1Click:Connect(function()
