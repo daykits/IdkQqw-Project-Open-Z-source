@@ -1,10 +1,14 @@
 -- ============================================
--- MENU SCRIPT HUB — 4 slot trống để dán HTTP
--- (style nâng cấp từ layout mẫu)
+-- MENU SCRIPT HUB PRO — 4 slot + Settings
+-- - Viền ngoài trong suốt (outer stroke transparency)
+-- - Chỉnh màu accent + màu từng slot
+-- - Chỉnh độ trong suốt viền, nền, blur
+-- - Lưu cấu hình bằng writefile/readfile (nếu executor hỗ trợ)
 -- ============================================
 
-if game.CoreGui:FindFirstChild("ScriptMenuHubPro") then
-    game.CoreGui.ScriptMenuHubPro:Destroy()
+local GUI_NAME = "ScriptMenuHubPro"
+if game.CoreGui:FindFirstChild(GUI_NAME) then
+    game.CoreGui[GUI_NAME]:Destroy()
 end
 
 -- ===================================================================== --
@@ -12,29 +16,29 @@ end
 -- ===================================================================== --
 local scripts = {
     {
-        name = "TOPI HUB",
-        desc = "VIP",
+        name = "topi hub",
+        desc = "ĐÃ AUDATE",
         icon = "⚡",
         color = Color3.fromRGB(102, 126, 234),
         url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykitstopi",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
     {
         name = "moon prime",
-        desc = "VIP",
+        desc = "ĐÃ AUDATE",
         icon = "🎯",
         color = Color3.fromRGB(240, 147, 251),
         url  = "https://raw.githubusercontent.com/daykits/baneno-hub-bf/refs/heads/main/moon%20prime",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
     {
-        name = "BANANA CRACK",
-        desc = "VIP",
+        name = "banana",
+        desc = "ĐÃ AUDATE",
         icon = "🔥",
         color = Color3.fromRGB(255, 159, 67),
         url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykits_banana",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
     {
-        name = "night crack",
-        desc = "VIP",
+        name = "night hop",
+        desc = "ĐÃ AUDATE",
         icon = "🚀",
         color = Color3.fromRGB(0, 210, 255),
         url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/night%20cracked",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
@@ -44,17 +48,9 @@ local scripts = {
 -- ===================================================================== --
 -- SERVICES / HELPERS
 -- ===================================================================== --
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-
-local ACCENT = Color3.fromRGB(0, 210, 255)
-local ACCENT2 = Color3.fromRGB(138, 43, 226)
-local BG_MAIN = Color3.fromRGB(24, 24, 38)
-local BG_ITEM = Color3.fromRGB(36, 36, 56)
-local BG_ITEM_HOVER = Color3.fromRGB(46, 46, 72)
-local STROKE = Color3.fromRGB(60, 60, 90)
-local TEXT_MAIN = Color3.fromRGB(255, 255, 255)
-local TEXT_DIM = Color3.fromRGB(150, 150, 175)
+local TweenService       = game:GetService("TweenService")
+local UserInputService   = game:GetService("UserInputService")
+local Lighting           = game:GetService("Lighting")
 
 local function new(cls, props, parent)
     local i = Instance.new(cls)
@@ -63,18 +59,10 @@ local function new(cls, props, parent)
     return i
 end
 
-local function corner(p, r)
-    return new("UICorner", { CornerRadius = UDim.new(0, r) }, p)
-end
-
-local function stroke(p, c, t)
-    return new("UIStroke", { Color = c, Thickness = t or 1 }, p)
-end
-
+local function corner(p, r) return new("UICorner", { CornerRadius = UDim.new(0, r) }, p) end
+local function stroke(p, c, t) return new("UIStroke", { Color = c, Thickness = t or 1 }, p) end
 local function tween(inst, info, goal)
-    local t = TweenService:Create(inst, info, goal)
-    t:Play()
-    return t
+    local t = TweenService:Create(inst, info, goal); t:Play(); return t
 end
 
 local function getGuiParent()
@@ -92,104 +80,203 @@ local function getGuiParent()
 end
 
 -- ===================================================================== --
+-- THEME STATE (chỉnh runtime được)
+-- ===================================================================== --
+local Theme = {
+    accent        = Color3.fromRGB(0, 210, 255),
+    accent2       = Color3.fromRGB(138, 43, 226),
+    bgMain        = Color3.fromRGB(24, 24, 38),
+    bgItem        = Color3.fromRGB(36, 36, 56),
+    bgItemHover   = Color3.fromRGB(46, 46, 72),
+    strokeColor   = Color3.fromRGB(60, 60, 90),
+    outerTransparency = 0.65,   -- viền ngoài trong suốt
+    outerThickness    = 2,
+    bgTransparency    = 0,      -- nền panel
+    blurEnabled       = true,
+}
+
+-- Load theme đã lưu (nếu có)
+local CONFIG_FILE = "ScriptMenuHubPro_Theme.json"
+local function loadTheme()
+    if type(readfile) ~= "function" or type(isfile) ~= "function" then return end
+    if not isfile(CONFIG_FILE) then return end
+    local ok, raw = pcall(readfile, CONFIG_FILE)
+    if not ok or not raw then return end
+    local ok2, data = pcall(function()
+        if type(HttpService) == "table" or type(game.GetService) == "function" then
+            return game:GetService("HttpService"):JSONDecode(raw)
+        end
+    end)
+    if not ok2 or type(data) ~= "table" then return end
+    for k, v in pairs(data) do
+        if k:match("Color$") and type(v) == "table" then
+            Theme[k] = Color3.new(v[1] or 0, v[2] or 0, v[3] or 0)
+        elseif Theme[k] ~= nil then
+            Theme[k] = v
+        end
+    end
+end
+loadTheme()
+
+local function saveTheme()
+    if type(writefile) ~= "function" then return end
+    local ok, HttpService = pcall(function() return game:GetService("HttpService") end)
+    if not ok then return end
+    local serialized = {}
+    for k, v in pairs(Theme) do
+        if typeof(v) == "Color3" then
+            serialized[k] = { v.R, v.G, v.B }
+        else
+            serialized[k] = v
+        end
+    end
+    pcall(function()
+        writefile(CONFIG_FILE, HttpService:JSONEncode(serialized))
+    end)
+end
+
+-- ===================================================================== --
+-- BLUR
+-- ===================================================================== --
+local blur
+if Theme.blurEnabled and Lighting:FindFirstChild("MiniHubBlur") == nil then
+    blur = new("BlurEffect", { Name = "MiniHubBlur", Size = 12 }, Lighting)
+end
+
+-- ===================================================================== --
 -- SCREEN GUI
 -- ===================================================================== --
 local parentGui = getGuiParent()
 local ScreenGui = new("ScreenGui", {
-    Name = "ScriptMenuHubPro",
+    Name = GUI_NAME,
     ResetOnSpawn = false,
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
     IgnoreGuiInset = true,
 }, parentGui)
 
 -- ===================================================================== --
--- MAIN FRAME
+-- MAIN FRAME + OUTER STROKE TRONG SUỐT
 -- ===================================================================== --
-local ROW_H = 68
-local HEADER_H = 64
-local PADDING = 14
-local WIDTH = 320
-local HEIGHT = HEADER_H + #scripts * ROW_H + PADDING * 2
+local ROW_H, HEADER_H, PADDING, WIDTH = 68, 64, 14, 340
+local HEIGHT = HEADER_H + #scripts * ROW_H + PADDING * 2 + 40 -- +40 cho nút Settings
 
 local Main = new("Frame", {
     Name = "Main",
     Parent = ScreenGui,
-    BackgroundColor3 = BG_MAIN,
+    BackgroundColor3 = Theme.bgMain,
+    BackgroundTransparency = Theme.bgTransparency,
     Position = UDim2.new(0, 30, 0, 30),
-    Size = UDim2.new(0, WIDTH, 0, HEIGHT),
+    Size = UDim2.new(0, 0, 0, 0),
     Active = true,
     Draggable = true,
     BorderSizePixel = 0,
-    ClipsDescendants = true,
+    ClipsDescendants = false,   -- cho phép stroke lộ ra ngoài
 }, ScreenGui)
 corner(Main, 16)
-local MainStroke = stroke(Main, Color3.fromRGB(70, 70, 110), 1.2)
 
--- subtle gradient overlay
+-- Viền ngoài trong suốt + dày
+local OuterStroke = stroke(Main, Theme.accent, Theme.outerThickness)
+OuterStroke.Transparency = Theme.outerTransparency
+
+-- Viền trong mờ nhẹ cho chiều sâu
+local InnerStroke = stroke(Main, Theme.strokeColor, 1)
+InnerStroke.Transparency = 0.35
+
+-- Gradient nền
 local Grad = new("UIGradient", {
     Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 55)),
-        ColorSequenceKeypoint.new(1, BG_MAIN),
+        ColorSequenceKeypoint.new(0, Theme.bgItem),
+        ColorSequenceKeypoint.new(1, Theme.bgMain),
     }),
     Rotation = 90,
 }, Main)
 
--- entry animation
-Main.Size = UDim2.new(0, 0, 0, 0)
-Main.Position = UDim2.new(0, 30, 0, 30)
+-- Animation mở
 task.spawn(function()
-    tween(Main, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    tween(Main, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Size = UDim2.new(0, WIDTH, 0, HEIGHT),
     })
 end)
+
+-- Content container (để stroke ngoài không bị clip)
+local Content = new("Frame", {
+    Parent = Main,
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 1, 0),
+    ClipsDescendants = true,
+}, Main)
+corner(Content, 16)
 
 -- ===================================================================== --
 -- HEADER
 -- ===================================================================== --
 local Header = new("Frame", {
-    Parent = Main,
+    Parent = Content,
     BackgroundTransparency = 1,
     Size = UDim2.new(1, 0, 0, HEADER_H),
-}, Main)
+}, Content)
 
-new("TextLabel", {
+local TitleLabel = new("TextLabel", {
     Parent = Header,
     BackgroundTransparency = 1,
     Position = UDim2.new(0, 18, 0, 10),
-    Size = UDim2.new(1, -80, 0, 26),
+    Size = UDim2.new(1, -110, 0, 26),
     Text = "📋  SCRIPT MENU",
     TextXAlignment = Enum.TextXAlignment.Left,
     Font = Enum.Font.GothamBold,
     TextSize = 17,
-    TextColor3 = TEXT_MAIN,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
 }, Header)
 
 new("TextLabel", {
     Parent = Header,
     BackgroundTransparency = 1,
     Position = UDim2.new(0, 18, 0, 34),
-    Size = UDim2.new(1, -80, 0, 16),
+    Size = UDim2.new(1, -110, 0, 16),
     Text = "Chọn script để chạy",
     TextXAlignment = Enum.TextXAlignment.Left,
     Font = Enum.Font.Gotham,
     TextSize = 11,
-    TextColor3 = TEXT_DIM,
+    TextColor3 = Theme.strokeColor:Lerp(Color3.new(1,1,1), 0.5),
 }, Header)
 
--- accent underline
 local Underline = new("Frame", {
     Parent = Header,
-    BackgroundColor3 = ACCENT,
+    BackgroundColor3 = Theme.accent,
     BorderSizePixel = 0,
     Position = UDim2.new(0, 18, 1, -3),
     Size = UDim2.new(0, 50, 0, 3),
 }, Header)
 corner(Underline, 2)
-local ULGrad = new("UIGradient", {
-    Color = ColorSequence.new(ACCENT, ACCENT2),
-}, Underline)
+new("UIGradient", { Color = ColorSequence.new(Theme.accent, Theme.accent2) }, Underline)
 
--- close button
+-- ===================================================================== --
+-- SETTINGS BUTTON + CLOSE
+-- ===================================================================== --
+local SettingsBtn = new("TextButton", {
+    Parent = Header,
+    BackgroundColor3 = Color3.fromRGB(50, 50, 72),
+    BorderSizePixel = 0,
+    AutoButtonColor = false,
+    Text = "⚙",
+    Font = Enum.Font.GothamBold,
+    TextSize = 15,
+    TextColor3 = Color3.fromRGB(200, 200, 220),
+    Position = UDim2.new(1, -74, 0, 14),
+    Size = UDim2.new(0, 26, 0, 26),
+}, Header)
+corner(SettingsBtn, 8)
+local SettingsStroke = stroke(SettingsBtn, Color3.fromRGB(80, 80, 110), 1)
+
+SettingsBtn.MouseEnter:Connect(function()
+    tween(SettingsBtn, TweenInfo.new(0.15), { BackgroundColor3 = Theme.accent })
+    SettingsBtn.TextColor3 = Color3.fromRGB(20, 20, 30)
+end)
+SettingsBtn.MouseLeave:Connect(function()
+    tween(SettingsBtn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(50, 50, 72) })
+    SettingsBtn.TextColor3 = Color3.fromRGB(200, 200, 220)
+end)
+
 local CloseBtn = new("TextButton", {
     Parent = Header,
     BackgroundColor3 = Color3.fromRGB(50, 50, 72),
@@ -217,6 +304,7 @@ CloseBtn.MouseLeave:Connect(function()
 end)
 
 CloseBtn.MouseButton1Click:Connect(function()
+    if blur then blur:Destroy() end
     local t = tween(Main, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
         Size = UDim2.new(0, 0, 0, 0),
         Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -225,13 +313,13 @@ CloseBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ===================================================================== --
--- TOAST (góc dưới)
+-- TOAST
 -- ===================================================================== --
 local Toast = new("TextLabel", {
     Parent = ScreenGui,
     Size = UDim2.new(0, 280, 0, 42),
     Position = UDim2.new(0.5, -140, 1, -58),
-    BackgroundColor3 = Color3.fromRGB(0, 180, 220),
+    BackgroundColor3 = Theme.accent,
     Text = "",
     Font = Enum.Font.GothamBold,
     TextSize = 13,
@@ -247,7 +335,7 @@ local function showToast(msg, color)
     toastToken += 1
     local myToken = toastToken
     Toast.Text = msg
-    Toast.BackgroundColor3 = color or Color3.fromRGB(0, 180, 220)
+    Toast.BackgroundColor3 = color or Theme.accent
     Toast.Visible = true
     Toast.Position = UDim2.new(0.5, -140, 1, -40)
     tween(Toast, TweenInfo.new(0.25), {
@@ -273,24 +361,24 @@ end
 -- ITEM BUILDER
 -- ===================================================================== --
 local running = false
+local items = {}
 
 local function createItem(data, index)
     local Y = HEADER_H + PADDING + (index - 1) * ROW_H
     local Btn = new("TextButton", {
-        Parent = Main,
+        Parent = Content,
         Name = "Item_" .. index,
-        BackgroundColor3 = BG_ITEM,
+        BackgroundColor3 = Theme.bgItem,
         BorderSizePixel = 0,
         AutoButtonColor = false,
         Text = "",
         Position = UDim2.new(0, PADDING, 0, Y),
         Size = UDim2.new(1, -PADDING * 2, 0, ROW_H - 8),
         ClipsDescendants = true,
-    }, Main)
+    }, Content)
     corner(Btn, 12)
-    local BtnStroke = stroke(Btn, STROKE, 1)
+    local BtnStroke = stroke(Btn, Theme.strokeColor, 1)
 
-    -- accent bar trái
     local Accent = new("Frame", {
         Parent = Btn,
         BackgroundColor3 = data.color,
@@ -300,7 +388,6 @@ local function createItem(data, index)
     }, Btn)
     corner(Accent, 2)
 
-    -- icon box
     local Icon = new("TextLabel", {
         Parent = Btn,
         BackgroundColor3 = data.color,
@@ -313,8 +400,7 @@ local function createItem(data, index)
     }, Btn)
     corner(Icon, 10)
 
-    -- tên
-    local Name = new("TextLabel", {
+    new("TextLabel", {
         Parent = Btn,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 68, 0, 8),
@@ -323,12 +409,11 @@ local function createItem(data, index)
         TextXAlignment = Enum.TextXAlignment.Left,
         Font = Enum.Font.GothamBold,
         TextSize = 13,
-        TextColor3 = TEXT_MAIN,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
         TextTruncate = Enum.TextTruncate.AtEnd,
     }, Btn)
 
-    -- mô tả
-    local Desc = new("TextLabel", {
+    new("TextLabel", {
         Parent = Btn,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 68, 0, 30),
@@ -337,11 +422,10 @@ local function createItem(data, index)
         TextXAlignment = Enum.TextXAlignment.Left,
         Font = Enum.Font.Gotham,
         TextSize = 11,
-        TextColor3 = TEXT_DIM,
+        TextColor3 = Color3.fromRGB(150, 150, 175),
         TextTruncate = Enum.TextTruncate.AtEnd,
     }, Btn)
 
-    -- arrow
     local Arrow = new("TextLabel", {
         Parent = Btn,
         BackgroundTransparency = 1,
@@ -353,35 +437,31 @@ local function createItem(data, index)
         TextColor3 = Color3.fromRGB(100, 100, 130),
     }, Btn)
 
-    -- hover
     Btn.MouseEnter:Connect(function()
         if running then return end
-        tween(Btn, TweenInfo.new(0.15), { BackgroundColor3 = BG_ITEM_HOVER })
+        tween(Btn, TweenInfo.new(0.15), { BackgroundColor3 = Theme.bgItemHover })
         tween(BtnStroke, TweenInfo.new(0.15), { Color = data.color })
         Arrow.TextColor3 = data.color
     end)
     Btn.MouseLeave:Connect(function()
         if running then return end
-        tween(Btn, TweenInfo.new(0.15), { BackgroundColor3 = BG_ITEM })
-        tween(BtnStroke, TweenInfo.new(0.15), { Color = STROKE })
+        tween(Btn, TweenInfo.new(0.15), { BackgroundColor3 = Theme.bgItem })
+        tween(BtnStroke, TweenInfo.new(0.15), { Color = Theme.strokeColor })
         Arrow.TextColor3 = Color3.fromRGB(100, 100, 130)
     end)
 
-    -- click chạy
     Btn.MouseButton1Click:Connect(function()
         if running then
             showToast("⏳ Đang chạy script khác...", Color3.fromRGB(200, 130, 40))
             return
         end
         if data.url == "" or not data.url then
-            showToast("⚠ Slot này chưa có URL — dán vào SCRIPTS", Color3.fromRGB(200, 60, 60))
+            showToast("⚠ Slot này chưa có URL", Color3.fromRGB(200, 60, 60))
             return
         end
-
         running = true
         Arrow.Text = "⏳"
         showToast("🚀 Đang chạy: " .. data.name)
-
         task.spawn(function()
             local ok, err = pcall(function()
                 local src = game:HttpGet(data.url)
@@ -406,17 +486,408 @@ local function createItem(data, index)
         end)
     end)
 
+    items[index] = { btn = Btn, stroke = BtnStroke, accent = Accent, data = data }
     return Btn
 end
 
--- ===================================================================== --
--- BUILD ITEMS
--- ===================================================================== --
 for i, data in ipairs(scripts) do
     createItem(data, i)
 end
 
--- toggle ẩn/hiện bằng RightShift
+-- ===================================================================== --
+-- SETTINGS PANEL
+-- ===================================================================== --
+local SettingsOpen = false
+local SettingsPanel
+
+local function colorToHex(c)
+    return string.format("#%02X%02X%02X",
+        math.floor(c.R * 255 + 0.5),
+        math.floor(c.G * 255 + 0.5),
+        math.floor(c.B * 255 + 0.5))
+end
+
+local function hexToColor(hex)
+    hex = hex:gsub("#", "")
+    if #hex ~= 6 then return nil end
+    local r = tonumber(hex:sub(1,2), 16)
+    local g = tonumber(hex:sub(3,4), 16)
+    local b = tonumber(hex:sub(5,6), 16)
+    if not (r and g and b) then return nil end
+    return Color3.fromRGB(r, g, b)
+end
+
+local function applyTheme()
+    -- Main
+    Main.BackgroundColor3 = Theme.bgMain
+    Main.BackgroundTransparency = Theme.bgTransparency
+    OuterStroke.Color = Theme.accent
+    OuterStroke.Transparency = Theme.outerTransparency
+    OuterStroke.Thickness = Theme.outerThickness
+    Grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Theme.bgItem),
+        ColorSequenceKeypoint.new(1, Theme.bgMain),
+    })
+    -- Underline
+    Underline.BackgroundColor3 = Theme.accent
+    -- Items
+    for _, it in pairs(items) do
+        it.btn.BackgroundColor3 = Theme.bgItem
+        it.stroke.Color = Theme.strokeColor
+    end
+    -- Blur
+    if Theme.blurEnabled and not blur then
+        blur = new("BlurEffect", { Name = "MiniHubBlur", Size = 12 }, Lighting)
+    elseif not Theme.blurEnabled and blur then
+        blur:Destroy()
+        blur = nil
+    end
+end
+
+local function buildSlider(parent, label, min, max, default, onChanged)
+    local holder = new("Frame", {
+        Parent = parent,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 40),
+    })
+    new("TextLabel", {
+        Parent = holder,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, -60, 0, 16),
+        Text = label,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(220, 220, 240),
+    })
+    local valueLabel = new("TextLabel", {
+        Parent = holder,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -55, 0, 0),
+        Size = UDim2.new(0, 55, 0, 16),
+        Text = tostring(default),
+        TextXAlignment = Enum.TextXAlignment.Right,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Theme.accent,
+    })
+    local bar = new("Frame", {
+        Parent = holder,
+        BackgroundColor3 = Color3.fromRGB(50, 50, 72),
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 22),
+        Size = UDim2.new(1, 0, 0, 6),
+    })
+    corner(bar, 3)
+    local fill = new("Frame", {
+        Parent = bar,
+        BackgroundColor3 = Theme.accent,
+        BorderSizePixel = 0,
+        Size = UDim2.new((default - min) / (max - min), 0, 1, 0),
+    })
+    corner(fill, 3)
+    local knob = new("Frame", {
+        Parent = bar,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel = 0,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new((default - min) / (max - min), 0, 0.5, 0),
+        Size = UDim2.new(0, 12, 0, 12),
+    })
+    corner(knob, 6)
+
+    local dragging = false
+    local function setValue(px)
+        local rel = math.clamp((px - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+        local val = min + rel * (max - min)
+        fill.Size = UDim2.new(rel, 0, 1, 0)
+        knob.Position = UDim2.new(rel, 0, 0.5, 0)
+        valueLabel.Text = string.format("%.2f", val)
+        onChanged(val)
+    end
+    bar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            setValue(input.Position.X)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch) then
+            setValue(input.Position.X)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    return holder
+end
+
+local function buildColorRow(parent, label, getColor, setColor)
+    local row = new("Frame", {
+        Parent = parent,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 32),
+    })
+    new("TextLabel", {
+        Parent = row,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(0, 120, 1, 0),
+        Text = label,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(220, 220, 240),
+    })
+    local preview = new("Frame", {
+        Parent = row,
+        BackgroundColor3 = getColor(),
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 125, 0.5, -10),
+        Size = UDim2.new(0, 40, 0, 20),
+    })
+    corner(preview, 5)
+    stroke(preview, Color3.fromRGB(80, 80, 110), 1)
+
+    local box = new("TextBox", {
+        Parent = row,
+        BackgroundColor3 = Color3.fromRGB(40, 40, 60),
+        BorderSizePixel = 0,
+        Text = colorToHex(getColor()),
+        Font = Enum.Font.Code,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Position = UDim2.new(1, -90, 0.5, -10),
+        Size = UDim2.new(0, 90, 0, 20),
+        ClearTextOnFocus = false,
+    })
+    corner(box, 5)
+    local boxStroke = stroke(box, Color3.fromRGB(80, 80, 110), 1)
+
+    box.FocusLost:Connect(function()
+        local c = hexToColor(box.Text)
+        if c then
+            setColor(c)
+            preview.BackgroundColor3 = c
+            box.Text = colorToHex(c)
+        else
+            box.Text = colorToHex(getColor())
+        end
+    end)
+    box.MouseEnter:Connect(function()
+        tween(boxStroke, TweenInfo.new(0.15), { Color = Theme.accent })
+    end)
+    box.MouseLeave:Connect(function()
+        tween(boxStroke, TweenInfo.new(0.15), { Color = Color3.fromRGB(80, 80, 110) })
+    end)
+    return row
+end
+
+local function toggleSettings()
+    SettingsOpen = not SettingsOpen
+    if not SettingsPanel then return end
+    if SettingsOpen then
+        SettingsPanel.Visible = true
+        SettingsPanel.Position = UDim2.new(1, 12, 0, 0)
+        tween(SettingsPanel, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Position = UDim2.new(1, 12, 0, 0),
+        })
+    else
+        local t = tween(SettingsPanel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Position = UDim2.new(1, 60, 0, 0),
+        })
+        t.Completed:Connect(function()
+            if not SettingsOpen then SettingsPanel.Visible = false end
+        end)
+    end
+end
+SettingsBtn.MouseButton1Click:Connect(toggleSettings)
+
+-- Build SettingsPanel
+do
+    SettingsPanel = new("Frame", {
+        Parent = Main,
+        Name = "SettingsPanel",
+        BackgroundColor3 = Color3.fromRGB(30, 30, 48),
+        BorderSizePixel = 0,
+        Position = UDim2.new(1, 60, 0, 0),
+        Size = UDim2.new(0, 260, 1, 0),
+        Visible = false,
+        ClipsDescendants = true,
+    }, Main)
+    corner(SettingsPanel, 14)
+    local spStroke = stroke(SettingsPanel, Theme.accent, 1.5)
+    spStroke.Transparency = 0.4
+
+    local Scroll = new("ScrollingFrame", {
+        Parent = SettingsPanel,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 12, 0, 12),
+        Size = UDim2.new(1, -24, 1, -24),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 3,
+        ScrollBarImageColor3 = Theme.accent,
+    }, SettingsPanel)
+    new("UIListLayout", {
+        Parent = Scroll,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 10),
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    }, Scroll)
+
+    -- Tiêu đề
+    local Head = new("TextLabel", {
+        Parent = Scroll,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 20),
+        Text = "⚙  GIAO DIỆN",
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.GothamBold,
+        TextSize = 13,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        LayoutOrder = 1,
+    })
+    new("Frame", {
+        Parent = Scroll,
+        BackgroundColor3 = Theme.accent,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 40, 0, 2),
+        LayoutOrder = 2,
+    }):AddChild(new("UICorner", { CornerRadius = UDim.new(1, 0) }))
+
+    -- màu accent
+    local rowAccent = buildColorRow(Scroll, "Màu accent",
+        function() return Theme.accent end,
+        function(c) Theme.accent = c; applyTheme(); saveTheme() end)
+    rowAccent.LayoutOrder = 3
+
+    local rowAccent2 = buildColorRow(Scroll, "Màu accent 2",
+        function() return Theme.accent2 end,
+        function(c) Theme.accent2 = c; applyTheme(); saveTheme() end)
+    rowAccent2.LayoutOrder = 4
+
+    -- Màu từng slot
+    for i, data in ipairs(scripts) do
+        local row = buildColorRow(Scroll, "Slot " .. i .. " màu",
+            function() return data.color end,
+            function(c)
+                data.color = c
+                local it = items[i]
+                if it then
+                    it.accent.BackgroundColor3 = c
+                    it.btn:FindFirstChildOfClass("TextLabel") -- no-op
+                end
+                saveTheme()
+            end)
+        row.LayoutOrder = 10 + i
+    end
+
+    -- Outer transparency
+    local sliderOuter = buildSlider(Scroll, "Viền ngoài trong suốt",
+        0, 1, Theme.outerTransparency,
+        function(v)
+            Theme.outerTransparency = v
+            OuterStroke.Transparency = v
+            saveTheme()
+        end)
+    sliderOuter.LayoutOrder = 20
+
+    -- Outer thickness
+    local sliderThick = buildSlider(Scroll, "Độ dày viền ngoài",
+        0.5, 6, Theme.outerThickness,
+        function(v)
+            Theme.outerThickness = v
+            OuterStroke.Thickness = v
+            saveTheme()
+        end)
+    sliderThick.LayoutOrder = 21
+
+    -- bg transparency
+    local sliderBg = buildSlider(Scroll, "Nền panel trong suốt",
+        0, 0.9, Theme.bgTransparency,
+        function(v)
+            Theme.bgTransparency = v
+            Main.BackgroundTransparency = v
+            saveTheme()
+        end)
+    sliderBg.LayoutOrder = 22
+
+    -- Blur toggle
+    local blurRow = new("Frame", {
+        Parent = Scroll,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 24),
+        LayoutOrder = 23,
+    })
+    new("TextLabel", {
+        Parent = blurRow,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -50, 1, 0),
+        Text = "Blur nền",
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(220, 220, 240),
+    })
+    local blurBtn = new("TextButton", {
+        Parent = blurRow,
+        BackgroundColor3 = Theme.blurEnabled and Theme.accent or Color3.fromRGB(70, 70, 100),
+        BorderSizePixel = 0,
+        AutoButtonColor = false,
+        Text = Theme.blurEnabled and "ON" or "OFF",
+        Font = Enum.Font.GothamBold,
+        TextSize = 11,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Position = UDim2.new(1, -44, 0.5, -10),
+        Size = UDim2.new(0, 44, 0, 20),
+    }, blurRow)
+    corner(blurBtn, 6)
+    blurBtn.MouseButton1Click:Connect(function()
+        Theme.blurEnabled = not Theme.blurEnabled
+        blurBtn.Text = Theme.blurEnabled and "ON" or "OFF"
+        blurBtn.BackgroundColor3 = Theme.blurEnabled and Theme.accent or Color3.fromRGB(70, 70, 100)
+        applyTheme(); saveTheme()
+    end)
+
+    -- Reset
+    local resetBtn = new("TextButton", {
+        Parent = Scroll,
+        BackgroundColor3 = Color3.fromRGB(220, 50, 70),
+        BorderSizePixel = 0,
+        AutoButtonColor = false,
+        Text = "↺  Reset về mặc định",
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Size = UDim2.new(1, 0, 0, 28),
+        LayoutOrder = 30,
+    }, Scroll)
+    corner(resetBtn, 8)
+    resetBtn.MouseButton1Click:Connect(function()
+        Theme.accent = Color3.fromRGB(0, 210, 255)
+        Theme.accent2 = Color3.fromRGB(138, 43, 226)
+        Theme.outerTransparency = 0.65
+        Theme.outerThickness = 2
+        Theme.bgTransparency = 0
+        Theme.blurEnabled = true
+        applyTheme(); saveTheme()
+        showToast("↺ Đã reset theme", Color3.fromRGB(0, 180, 120))
+    end)
+end
+
+applyTheme()
+
+-- ===================================================================== --
+-- TOGGLE ẨN/HIỆN
+-- ===================================================================== --
 local visible = true
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
@@ -426,4 +897,4 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
-showToast("✅ Menu đã load — RightShift để ẩn/hiện", Color3.fromRGB(0, 180, 220))
+showToast("✅ Menu đã load — ⚙ để chỉnh theme, RightShift ẩn/hiện")
