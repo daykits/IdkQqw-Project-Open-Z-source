@@ -1,0 +1,4481 @@
+-- This file was generated at discord.gg/syncrypt
+
+local unpack_ = unpack or table.unpack
+local StarterGui = game:GetService("StarterGui")
+local t1 = {
+	value1 = nil
+}
+
+t1.value1 = StarterGui
+
+function t1.value2(p1, p2, p3, p4, p5)
+	task.spawn(function()
+		local BindableFunction = Instance.new("BindableFunction")
+
+		function BindableFunction.OnInvoke(p6)
+			if not p5 then
+				BindableFunction:Destroy()
+
+				return
+			end
+
+			p5(p6)
+			BindableFunction:Destroy()
+		end
+
+		if pcall(function()
+			local value1 = t1.value1
+			local v6 = p1
+			local v7 = p2
+			local v8 = p3 or 3
+			local v9 = p4
+			local v10 = p4
+
+			if not v10 then
+				value1.SetCore(value1, "SendNotification", {
+					Title = v6,
+					Text = v7,
+					Duration = v8,
+					Button1 = v9,
+					Callback = v10 or nil
+				})
+
+				return
+			end
+
+			v10 = BindableFunction
+			value1.SetCore(value1, "SendNotification", {
+				Title = v6,
+				Text = v7,
+				Duration = v8,
+				Button1 = v9,
+				Callback = v10 or nil
+			})
+		end) then
+			return
+		end
+
+		BindableFunction:Destroy()
+	end)
+end
+
+t1.value2("System", "Loading...", 3)
+task.wait(3)
+t1.value2("System", "Loaded successfully!", 3)
+task.wait(2)
+t1.value2("System", "This is a BETA version. Some features may not work correctly.", 10, "Discord", function(p7)
+	if p7 ~= "Discord" then
+		return
+	end
+
+	local setclipboard_ = setclipboard
+
+	if type(setclipboard_) ~= "function" then
+		return
+	end
+
+	setclipboard("https://discord.gg/SxSRKSRGEk")
+	t1.value2("FTS", "Discord link copied!", 5)
+end)
+
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+t1.value3 = nil
+t1.value3 = LocalPlayer
+
+local t2 = { pcall(function()
+		local t3 = {
+			value1 = game:GetService("TweenService"),
+			value2 = game:GetService("UserInputService")
+		}
+		local CoreGui = game:GetService("CoreGui")
+		local PlayerGui = t1.value3:WaitForChild("PlayerGui")
+
+		for _, v in ipairs({ PlayerGui, CoreGui }) do
+			local FTSHub = v:FindFirstChild("FTSHub") or v:FindFirstChild("FTSHubUI")
+
+			if FTSHub then
+				FTSHub:Destroy()
+			end
+		end
+
+		t3.value3 = {
+			black = Color3.fromRGB(15, 15, 18),
+			panel = Color3.fromRGB(18, 18, 22),
+			card = Color3.fromRGB(28, 28, 33),
+			white = Color3.fromRGB(255, 255, 255),
+			gray = Color3.fromRGB(160, 160, 170),
+			muted = Color3.fromRGB(120, 120, 130),
+			border = Color3.fromRGB(255, 255, 255)
+		}
+
+		local function v20(p8, p9, p10)
+			local instance = Instance.new(p8)
+
+			for k, v in pairs(p9 or {}) do
+				instance[k] = v
+			end
+
+			instance.Parent = p10
+
+			return instance
+		end
+
+		t3.value4 = nil
+
+		function t3.value5(p11, p12, p13, p14, p15, p16, p17)
+			return v20("TextLabel", {
+				BackgroundTransparency = 1,
+				Position = p13,
+				Size = p14,
+				Text = tostring(p12 or ""),
+				TextColor3 = p16 or t3.value3.white,
+				TextSize = p15 or 14,
+				Font = p17 and Enum.Font.GothamBold or Enum.Font.Gotham,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextWrapped = true
+			}, p11)
+		end
+
+		t3.value4 = nil
+		pcall(function()
+			local lua = game:HttpGetAsync("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua")
+			local chunk = loadstring(lua)
+
+			if not chunk then
+				return
+			end
+
+			t3.value4 = chunk()
+
+			if not t3.value4 then
+				return
+			end
+
+			t3.value4.SetIconsType("lucide")
+		end)
+		t3.value6 = {
+			house = "rbxassetid://3926305904",
+			zap = "rbxassetid://3926307971",
+			target = "rbxassetid://3926307971",
+			["shopping-cart"] = "rbxassetid://3926305904",
+			["map-pin"] = "rbxassetid://3926305904",
+			["map-pinned"] = "rbxassetid://3926305904",
+			swords = "rbxassetid://3926307971",
+			["layout-grid"] = "rbxassetid://3926305904",
+			settings = "rbxassetid://3926307971",
+			flame = "rbxassetid://3926305904",
+			skull = "rbxassetid://3926307971",
+			["chart-no-axes-column-increasing"] = "rbxassetid://3926305904",
+			bot = "rbxassetid://3926307971",
+			sparkles = "rbxassetid://3926305904"
+		}
+
+		function t3.value7(p18)
+			local value4 = t3.value4
+
+			if value4 then
+				value4 = type(p18) == "string"
+			end
+
+			if not value4 then
+				return t3.value6[p18] or "rbxassetid://3926305904"
+			end
+
+			local function v27()
+				return t3.value4.GetIcon(p18)
+			end
+
+			local ok, result = pcall(v27)
+
+			if ok then
+			elseif ok then
+				return result
+			else
+				return t3.value6[p18] or "rbxassetid://3926305904"
+			end
+
+			if type(result) == "string" then
+				ok = result ~= ""
+			else
+				ok = false
+			end
+
+			if ok then
+				return result
+			else
+				return t3.value6[p18] or "rbxassetid://3926305904"
+			end
+		end
+
+		t3.value8 = v20("ScreenGui", {
+			Name = "FTSHub",
+			ResetOnSpawn = false,
+			IgnoreGuiInset = true,
+			DisplayOrder = 100,
+			ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		}, PlayerGui)
+		t3.value9 = v20("Frame", {
+			Name = "MainFrame",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.new(0, 720, 0, 520),
+			BackgroundColor3 = t3.value3.black,
+			BackgroundTransparency = 0.25,
+			BorderSizePixel = 0,
+			Active = true,
+			ClipsDescendants = true
+		}, t3.value8)
+
+		local value9 = t3.value9
+
+		v20("UICorner", {
+			CornerRadius = UDim.new(0, 16 or 10)
+		}, value9)
+
+		local value92 = t3.value9
+
+		v20("UIStroke", {
+			Color = t3.value3.border,
+			Transparency = 0.8,
+			Thickness = 1.2
+		}, value92)
+		v20("UISizeConstraint", {
+			MinSize = Vector2.new(320, 360),
+			MaxSize = Vector2.new(1100, 850)
+		}, t3.value9)
+
+		local Size = t3.value9.Size
+		local Position = t3.value9.Position
+
+		t3.value10 = Size
+		t3.value11 = Position
+
+		local TextButton = v20("TextButton", {
+			Name = "ResizeGrip",
+			AnchorPoint = Vector2.new(1, 1),
+			Position = UDim2.new(1, -2, 1, -2),
+			Size = UDim2.fromOffset(34, 26),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Text = "",
+			AutoButtonColor = false,
+			Active = true,
+			ZIndex = 50
+		}, t3.value9)
+
+		t3.value12 = v20("Frame", {
+			Name = "ResizeHorizontalRail",
+			AnchorPoint = Vector2.new(1, 1),
+			Position = UDim2.new(1, -3, 1, -3),
+			Size = UDim2.fromOffset(19, 3),
+			BackgroundColor3 = Color3.fromRGB(248, 248, 255),
+			BackgroundTransparency = 0.32,
+			BorderSizePixel = 0,
+			ZIndex = 51
+		}, TextButton)
+
+		local value12 = t3.value12
+
+		v20("UICorner", {
+			CornerRadius = UDim.new(0, 99 or 10)
+		}, value12)
+		t3.value13 = v20("Frame", {
+			Name = "ResizeVerticalRail",
+			AnchorPoint = Vector2.new(1, 1),
+			Position = UDim2.new(1, -3, 1, -3),
+			Size = UDim2.fromOffset(3, 14),
+			BackgroundColor3 = Color3.fromRGB(248, 248, 255),
+			BackgroundTransparency = 0.32,
+			BorderSizePixel = 0,
+			ZIndex = 51
+		}, TextButton)
+
+		local value13 = t3.value13
+
+		v20("UICorner", {
+			CornerRadius = UDim.new(0, 99)
+		}, value13)
+		TextButton.MouseEnter:Connect(function()
+			t3.value12.BackgroundTransparency = 0.12
+			t3.value13.BackgroundTransparency = 0.12
+		end)
+		TextButton.MouseLeave:Connect(function()
+			t3.value12.BackgroundTransparency = 0.32
+			t3.value13.BackgroundTransparency = 0.32
+		end)
+		t3.value14 = false
+		t3.value15 = nil
+		t3.value16 = nil
+		TextButton.InputBegan:Connect(function(input)
+			if not (input.UserInputType == Enum.UserInputType.MouseButton1 and true or input.UserInputType == Enum.UserInputType.Touch) then
+				return
+			end
+
+			t3.value14 = true
+			t3.value15 = input.Position
+			t3.value16 = t3.value9.AbsoluteSize
+		end)
+		t3.value2.InputChanged:Connect(function(input)
+			local value14 = t3.value14
+
+			if value14 then
+				value14 = input.UserInputType == Enum.UserInputType.MouseMovement and true or input.UserInputType == Enum.UserInputType.Touch
+			end
+
+			if not value14 then
+				return
+			end
+
+			local v38 = input.Position - t3.value15
+			local ViewportSize = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1280, 720)
+			local n1 = 320
+			local v41 = ViewportSize.X - 16
+			local v42 = math.min(1100, v41)
+			local v43 = ViewportSize.Y - 16
+			local v44 = math.min(850, v43)
+			local v45 = t3.value16.X + v38.X
+			local v46 = math.min(n1, v42)
+			local v47 = math.max(n1, v42)
+			local v48 = math.clamp(v45, v46, v47)
+			local v49 = t3.value16.Y + v38.Y
+			local v50 = math.min(360, v44)
+			local v51 = math.max(360, v44)
+			local v52 = math.clamp(v49, v50, v51)
+
+			t3.value9.Size = UDim2.fromOffset(v48, v52)
+			t3.value9.Position = UDim2.fromScale(0.5, 0.5)
+			t3.value10 = t3.value9.Size
+		end)
+
+		local InputEnded = t3.value2.InputEnded
+
+		InputEnded.Connect(InputEnded, function(p19)
+			local _ = p19.UserInputType == Enum.UserInputType.MouseButton1 and true or p19.UserInputType == Enum.UserInputType.Touch
+		end)
+		t3.value17 = v20("Frame", {
+			Name = "TopBar",
+			Size = UDim2.new(1, 0, 0, 60),
+			BackgroundTransparency = 1
+		}, t3.value9)
+		v20("ImageLabel", {
+			Size = UDim2.fromOffset(36, 36),
+			Position = UDim2.new(0, 16, 0, 12),
+			BackgroundTransparency = 1,
+			Image = "rbxassetid://83826453742420",
+			ImageColor3 = t3.value3.white
+		}, t3.value17)
+		t3.value5(t3.value17, "FTS HUB", UDim2.new(0, 60, 0, 8), UDim2.new(0, 200, 0, 27), 22, t3.value3.white, true)
+		t3.value5(t3.value17, "by fts9999", UDim2.new(0, 60, 0, 32), UDim2.new(0, 200, 0, 18), 12, t3.value3.gray, false)
+		t3.value18 = v20("Frame", {
+			Size = UDim2.fromOffset(120, 32),
+			Position = UDim2.new(1, -135, 0, 14),
+			BackgroundColor3 = Color3.fromRGB(30, 30, 35),
+			BackgroundTransparency = 0.4
+		}, t3.value17)
+
+		local value18 = t3.value18
+
+		v20("UICorner", {
+			CornerRadius = UDim.new(0, 16 or 10)
+		}, value18)
+
+		local value182 = t3.value18
+
+		v20("UIStroke", {
+			Color = t3.value3.border,
+			Transparency = 0.85 or 0.8,
+			Thickness = 1
+		}, value182)
+		v20("UIListLayout", {
+			FillDirection = Enum.FillDirection.Horizontal,
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			VerticalAlignment = Enum.VerticalAlignment.Center,
+			Padding = UDim.new(0, 12)
+		}, t3.value18)
+
+		local function v57(p20)
+			return v20("TextButton", {
+				Size = UDim2.fromOffset(20, 20),
+				BackgroundTransparency = 1,
+				Text = p20,
+				TextColor3 = Color3.fromRGB(200, 200, 200),
+				TextSize = 14,
+				Font = Enum.Font.GothamBold,
+				AutoButtonColor = true
+			}, t3.value18)
+		end
+
+		local v58 = v57("—")
+		local v59 = v57("▢")
+		local v60 = v57("X")
+
+		t3.value19 = v20("TextButton", {
+			Name = "OpenToggleButton",
+			Size = UDim2.fromOffset(52, 52),
+			Position = UDim2.new(0, 20, 0.5, -26),
+			BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+			BackgroundTransparency = 0.12,
+			Text = "",
+			Active = true,
+			AutoButtonColor = false,
+			Visible = false,
+			ZIndex = 100
+		}, t3.value8)
+
+		local value19 = t3.value19
+
+		v20("UICorner", {
+			CornerRadius = UDim.new(0, 26)
+		}, value19)
+
+		local value192 = t3.value19
+
+		v20("UIStroke", {
+			Color = t3.value3.border,
+			Transparency = 0.45,
+			Thickness = 1.3
+		}, value192)
+
+		local ImageLabel = v20("ImageLabel", {
+			Name = "ToggleLogo",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(0.78, 0.78),
+			BackgroundTransparency = 1,
+			Image = "rbxassetid://83826453742420",
+			ScaleType = Enum.ScaleType.Fit,
+			ZIndex = 101
+		}, t3.value19)
+
+		v20("UICorner", {
+			CornerRadius = UDim.new(0, 20)
+		}, ImageLabel)
+		t3.value20 = true
+		t3.value21 = false
+		t3.value22 = t3.value2.MouseBehavior
+		t3.value23 = t3.value2.MouseIconEnabled
+
+		function t3.value24()
+			t3.value2.MouseBehavior = Enum.MouseBehavior.Default
+			t3.value2.MouseIconEnabled = true
+		end
+		function t3.value25()
+			t3.value2.MouseBehavior = t3.value22
+			t3.value2.MouseIconEnabled = t3.value23
+		end
+
+		if not t3.value2.TouchEnabled then
+			t3.value24()
+		end
+
+		local function toggleValue20()
+			t3.value20 = not t3.value20
+			t3.value9.Visible = t3.value20
+			t3.value19.Visible = not t3.value20
+
+			if t3.value2.TouchEnabled then
+				return
+			end
+
+			if t3.value20 then
+				local _ = t3.value2.MouseBehavior
+				local _ = t3.value2.MouseIconEnabled
+
+				t3.value24()
+
+				return
+			end
+
+			t3.value25()
+		end
+
+		v58.Activated:Connect(toggleValue20)
+		game:GetService("RunService").RenderStepped:Connect(function()
+			local value20 = t3.value20
+
+			if value20 then
+				value20 = not t3.value2.TouchEnabled
+			end
+
+			if not value20 then
+				return
+			end
+
+			t3.value24()
+		end)
+
+		local InputBegan = t3.value2.InputBegan
+
+		InputBegan.Connect(InputBegan, function(p21, _)
+			if p21.KeyCode ~= Enum.KeyCode.LeftControl then
+				return
+			end
+
+			toggleValue20()
+		end)
+		t3.value26 = false
+		t3.value27 = false
+		t3.value28 = nil
+		t3.value29 = nil
+		t3.value30 = nil
+		t3.value31 = 6
+		t3.value19.InputBegan:Connect(function(input)
+			if not (input.UserInputType == Enum.UserInputType.MouseButton1 and true or input.UserInputType == Enum.UserInputType.Touch) then
+				return
+			end
+
+			t3.value26 = true
+			t3.value27 = false
+			t3.value28 = input.Position
+			t3.value29 = t3.value19.Position
+			t3.value30 = input
+		end)
+		t3.value2.InputChanged:Connect(function(input)
+			if not t3.value26 then
+				return
+			end
+
+			local v69
+
+			if input.UserInputType == Enum.UserInputType.MouseMovement then
+				v69 = true
+			elseif input.UserInputType == Enum.UserInputType.Touch then
+				v69 = t3.value30 == input
+			else
+				v69 = false
+			end
+
+			if not v69 then
+				return
+			end
+
+			local v70 = input.Position - t3.value28
+			local X = v70.X
+			local v72
+
+			if math.abs(X) > t3.value31 then
+				v72 = true
+			else
+				local Y = v70.Y
+
+				v72 = math.abs(Y) > t3.value31
+			end
+
+			local v74
+
+			if v72 then
+				t3.value27 = true
+				v74 = true
+			else
+				v74 = v70
+			end
+
+			if not t3.value27 then
+				return
+			end
+
+			local CurrentCamera = workspace.CurrentCamera
+			local ViewportSize = CurrentCamera and CurrentCamera.ViewportSize or Vector2.new(1280, 720)
+			local AbsoluteSize = t3.value19.AbsoluteSize
+			local clamp = math.clamp
+			local v79 = t3.value29.X.Offset + v70.X
+			local v80 = ViewportSize.X - AbsoluteSize.X
+			local v81 = clamp(v79, 0, (math.max(0, v80)))
+			local v82 = t3.value29.Y.Offset + v70.Y
+			local v83 = ViewportSize.Y - AbsoluteSize.Y
+			local v84 = math.max(0, v83)
+			local v85 = math.clamp(v82, 0, v84)
+
+			t3.value19.Position = UDim2.fromOffset(v81, v85)
+		end)
+		t3.value2.InputEnded:Connect(function(input)
+			local value26 = t3.value26
+
+			if value26 then
+				value26 = input.UserInputType == Enum.UserInputType.MouseButton1 and true or input.UserInputType == Enum.UserInputType.Touch
+			end
+
+			if not (value26 and not t3.value27) then
+				return
+			end
+
+			toggleValue20()
+		end)
+		v60.Activated:Connect(function()
+			t3.value8:Destroy()
+		end)
+		v59.Activated:Connect(function()
+			t3.value21 = not t3.value21
+
+			if t3.value21 then
+				t3.value9.Size = UDim2.new(0.96, 0, 0.92, 0)
+				t3.value9.Position = UDim2.fromScale(0.5, 0.5)
+			else
+				t3.value9.Size = t3.value10
+				t3.value9.Position = t3.value11
+			end
+		end)
+		t3.value32 = false
+		t3.value33 = nil
+		t3.value34 = nil
+		t3.value35 = nil
+		t3.value17.InputBegan:Connect(function(input)
+			if not (input.UserInputType == Enum.UserInputType.MouseButton1 and true or input.UserInputType == Enum.UserInputType.Touch) then
+				return
+			end
+
+			local Position2 = input.Position
+			local Position3 = t3.value9.Position
+
+			t3.value32 = true
+			t3.value34 = Position2
+			t3.value35 = Position3
+			input.Changed:Connect(function()
+				if input.UserInputState ~= Enum.UserInputState.End then
+					return
+				end
+
+				t3.value32 = false
+			end)
+		end)
+		t3.value17.InputChanged:Connect(function(input)
+			if not (input.UserInputType == Enum.UserInputType.MouseMovement and true or input.UserInputType == Enum.UserInputType.Touch) then
+				return
+			end
+
+			t3.value33 = input
+		end)
+
+		local InputChanged = t3.value2.InputChanged
+
+		InputChanged.Connect(InputChanged, function(p22)
+			local value32 = t3.value32
+
+			if value32 then
+				value32 = p22 == t3.value33 and true or p22.UserInputType == Enum.UserInputType.Touch
+			end
+
+			if not value32 then
+				return
+			end
+
+			local v91 = p22.Position - t3.value34
+
+			t3.value9.Position = UDim2.new(t3.value35.X.Scale, t3.value35.X.Offset + v91.X, t3.value35.Y.Scale, t3.value35.Y.Offset + v91.Y)
+		end)
+		t3.value36 = v20("Frame", {
+			Name = "SideBar",
+			Size = UDim2.new(0, 190, 1, -70),
+			Position = UDim2.new(0, 15, 0, 60),
+			BackgroundTransparency = 1
+		}, t3.value9)
+		v20("UIListLayout", {
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Padding = UDim.new(0, 6)
+		}, t3.value36)
+		t3.value37 = t3.value5(t3.value9, "///// WELCOME", UDim2.new(0, 15, 1, -50), UDim2.new(0, 150, 0, 40), 10, t3.value3.muted, true)
+		t3.value38 = v20("Frame", {
+			Name = "ContentContainer",
+			Size = UDim2.new(1, -230, 1, -75),
+			Position = UDim2.new(0, 215, 0, 60),
+			BackgroundColor3 = t3.value3.panel,
+			BackgroundTransparency = 0.5,
+			ClipsDescendants = true
+		}, t3.value9)
+
+		local value38 = t3.value38
+
+		v20("UICorner", {
+			CornerRadius = UDim.new(0, 14 or 10)
+		}, value38)
+
+		local value382 = t3.value38
+
+		v20("UIStroke", {
+			Color = t3.value3.border,
+			Transparency = 0.9 or 0.8,
+			Thickness = 1
+		}, value382)
+		t3.value39 = {}
+		t3.value40 = {}
+		t3.value41 = 0
+		t3.value42 = v20("Frame", {
+			Name = "ActiveTabUnderline",
+			Size = UDim2.fromOffset(90, 2),
+			Position = UDim2.fromOffset(24, 100),
+			BackgroundColor3 = t3.value3.white,
+			BackgroundTransparency = 0.32,
+			BorderSizePixel = 0,
+			Visible = false,
+			ZIndex = 20
+		}, t3.value9)
+
+		local value42 = t3.value42
+
+		v20("UICorner", {
+			CornerRadius = UDim.new(0, 2 or 10)
+		}, value42)
+
+		local UIStroke = Instance.new("UIStroke")
+
+		UIStroke.Color = t3.value3.white
+		UIStroke.Thickness = 1
+		UIStroke.Transparency = 0.72
+		UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		UIStroke.Parent = t3.value42
+		t3.value43 = nil
+		t3.value44 = nil
+
+		function t3.value45(p23, p24)
+			task.defer(function()
+				local Parent = p23
+
+				if Parent then
+					Parent = p23.Parent
+
+					if Parent then
+						Parent = p24
+
+						if Parent then
+							Parent = p24.Parent
+						end
+					end
+				end
+
+				if not Parent then
+					return
+				end
+
+				local v97 = p23
+				local uDim2New = UDim2.new
+				local v99 = p24.AbsoluteContentSize.Y + 20
+				local Y = p23.AbsoluteWindowSize.Y
+
+				v97.CanvasSize = uDim2New(0, 0, 0, (math.max(v99, Y)))
+			end)
+		end
+
+		t3.value46 = nil
+
+		function t3.value47(p25)
+			local value46 = t3.value46
+			local pairs_ = pairs
+			local v103, v104, v105 = pairs_(t3.value40)
+
+			while true do
+				local v106
+
+				v105, v106 = v103(v104, v105)
+
+				if not v105 then
+					break
+				end
+
+				local visible = v105 == p25
+
+				v106.Visible = visible
+
+				if visible then
+					local ScrollList = v106:FindFirstChild("ScrollList")
+
+					if ScrollList then
+						ScrollList.CanvasPosition = Vector2.new(0, 0)
+					end
+
+					pairs_ = "Position"
+					v106[pairs_] = UDim2.new(0, visible and (t3.value46 and 12 or 0) or visible or 0, 0, 0)
+
+					local value462 = t3.value46
+
+					if value462 then
+						value462 = t3.value46 ~= p25
+					end
+
+					if value462 then
+						v106.Position = UDim2.new(0, 14, 0, 0)
+
+						local value1 = t3.value1
+						local tweenInfoNew = TweenInfo.new
+						local Quint = Enum.EasingStyle.Quint
+						local EasingDirection = Enum.EasingDirection
+
+						value1.Create(value1, v106, tweenInfoNew(0.22, Quint, EasingDirection.Out), {
+							Position = UDim2.new(0, 0, 0, 0)
+						}):Play()
+					end
+				else
+					pairs_ = "Visible"
+				end
+			end
+
+			for k, v in pairs(t3.value39) do
+				local visible = k == p25
+				local Button = v.Button
+				local s1 = "BackgroundColor3"
+				local color3
+
+				if visible then
+					color3 = Color3.fromRGB(45, 45, 50)
+				else
+					color3 = visible
+				end
+
+				Button[s1] = color3 or Color3.fromRGB(20, 20, 25)
+				v.Button.BackgroundTransparency = visible and 0.3 or 1
+				v.Icon.ImageColor3 = visible and t3.value3.white or t3.value3.gray
+
+				local Title = v.Title
+				local s2 = "TextColor3"
+				local white
+
+				if visible then
+					white = t3.value3.white
+				else
+					white = visible
+				end
+
+				Title[s2] = white or t3.value3.gray
+				v.Arrow.Visible = visible
+				v.Stroke.Enabled = visible
+
+				if visible then
+					t3.value1:Create(v.Button, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						BackgroundTransparency = 0.3
+					}):Play()
+					task.defer(function()
+						if not (v.Button.Parent and t3.value42.Parent) then
+							return
+						end
+
+						local v123 = v.Button.AbsolutePosition.X - t3.value9.AbsolutePosition.X + 12
+						local v124 = v.Button.AbsolutePosition.Y - t3.value9.AbsolutePosition.Y
+						local Y = v.Button.AbsoluteSize.Y
+						local math_ = math
+						local v127 = v124 + Y - 3
+						local v128 = math_.max(40, v.Button.AbsoluteSize.X - 24)
+						local uDim2 = UDim2.fromOffset(v123, v127)
+						local uDim22 = UDim2.fromOffset(v128, 2)
+						local UDim2_ = UDim2
+						local v132 = v123 + v128 / 2
+						local uDim23 = UDim2_.fromOffset(v132 - 4, v127)
+						local uDim24 = UDim2.fromOffset(8, 2)
+
+						t3.value42.Visible = true
+
+						if t3.value43 then
+							t3.value43:Cancel()
+						end
+
+						if t3.value44 then
+							t3.value44:Cancel()
+						end
+
+						local v135 = value46
+
+						if v135 then
+							v135 = value46 ~= p25
+						end
+
+						if not v135 then
+							t3.value42.Position = uDim23
+							t3.value42.Size = uDim24
+							t3.value43 = t3.value1:Create(t3.value42, TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+								Position = uDim2,
+								Size = uDim22,
+								BackgroundTransparency = 0.32
+							})
+							t3.value43:Play()
+
+							return
+						end
+
+						t3.value43 = t3.value1:Create(t3.value42, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+							Position = uDim23,
+							Size = uDim24,
+							BackgroundTransparency = 0.48
+						})
+						t3.value43:Play()
+						t3.value43.Completed:Once(function(playbackState)
+							if not (playbackState ~= Enum.PlaybackState.Completed and true or not t3.value42.Parent) then
+								local value1 = t3.value1
+								local value422 = t3.value42
+								local tweenInfoNew = TweenInfo.new
+								local Back = Enum.EasingStyle.Back
+								local t4 = {
+									Position = uDim2,
+									Size = uDim22,
+									BackgroundTransparency = 0.32
+								}
+
+								t3.value44 = value1.Create(value1, value422, tweenInfoNew(0.32, Back, Enum.EasingDirection.Out), t4)
+								t3.value44:Play()
+							end
+						end)
+					end)
+				end
+			end
+		end
+		function t3.value48(p26, p27, p28, p29, p30)
+			local Frame = v20("Frame", {
+				Size = UDim2.new(1, 0, 0, p30 or 52),
+				BackgroundColor3 = t3.value3.card,
+				BackgroundTransparency = 0.4,
+				BorderSizePixel = 0,
+				ClipsDescendants = false
+			}, p26)
+
+			v20("UICorner", {
+				CornerRadius = UDim.new(0, 10)
+			}, Frame)
+			v20("UIStroke", {
+				Color = t3.value3.border,
+				Transparency = 0.92,
+				Thickness = 1
+			}, Frame)
+
+			local Frame2 = v20("Frame", {
+				Size = UDim2.fromOffset(36, 36),
+				Position = UDim2.new(0, 8, 0, 8),
+				BackgroundColor3 = Color3.fromRGB(40, 40, 48),
+				BackgroundTransparency = 0.5
+			}, Frame)
+
+			v20("UICorner", {
+				CornerRadius = UDim.new(0, 8)
+			}, Frame2)
+			v20("ImageLabel", {
+				Size = UDim2.fromOffset(20, 20),
+				Position = UDim2.new(0.5, -10, 0.5, -10),
+				BackgroundTransparency = 1,
+				Image = t3.value7(p29),
+				ImageColor3 = Color3.fromRGB(230, 230, 240)
+			}, Frame2)
+
+			local v143 = t3.value5(Frame, p27, UDim2.new(0, 52, 0, 8), UDim2.new(1, -230, 0, 18), 13, t3.value3.white, true)
+
+			v143.Name = "RowTitle"
+			v143.TextTruncate = Enum.TextTruncate.AtEnd
+
+			local v144
+
+			if p28 then
+				v144 = p28 ~= ""
+			else
+				v144 = p28
+			end
+
+			if not v144 then
+				return Frame
+			end
+
+			t3.value5(Frame, p28, UDim2.new(0, 52, 0, 27), UDim2.new(1, -230, 0, 14), 11, Color3.fromRGB(140, 140, 150), false).TextTruncate = Enum.TextTruncate.AtEnd
+
+			return Frame
+		end
+		function t3.value49(p31, p32, p33)
+			t3.value41 = t3.value41 + 1
+
+			local TextButton2 = v20("TextButton", {
+				Size = UDim2.new(1, 0, 0, 42),
+				BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+				BackgroundTransparency = 1,
+				Text = "",
+				LayoutOrder = t3.value41,
+				AutoButtonColor = false
+			}, t3.value36)
+
+			v20("UICorner", {
+				CornerRadius = UDim.new(0, 12)
+			}, TextButton2)
+
+			local UIStroke2 = v20("UIStroke", {
+				Color = t3.value3.border,
+				Transparency = 0.7,
+				Thickness = 1
+			}, TextButton2)
+
+			UIStroke2.Enabled = false
+
+			local ImageLabel2 = v20("ImageLabel", {
+				Size = UDim2.fromOffset(20, 20),
+				Position = UDim2.new(0, 10, 0.5, -10),
+				BackgroundTransparency = 1,
+				Image = t3.value7(p32),
+				ImageColor3 = t3.value3.gray
+			}, TextButton2)
+			local v148 = t3.value5(TextButton2, p31, UDim2.new(0, 36, 0, 0), UDim2.new(1, -42, 1, 0), 14, t3.value3.gray, false)
+
+			v148.TextTruncate = Enum.TextTruncate.AtEnd
+
+			local v149 = t3.value5(TextButton2, "›", UDim2.new(1, -25, 0, 0), UDim2.new(0, 20, 1, 0), 18, Color3.fromRGB(200, 200, 200), true)
+
+			v149.TextXAlignment = Enum.TextXAlignment.Center
+			v149.Visible = false
+
+			local Frame = v20("Frame", {
+				Name = p31 .. "Page",
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Visible = false,
+				ClipsDescendants = true
+			}, t3.value38)
+
+			t3.value5(Frame, p31, UDim2.new(0, 18, 0, 12), UDim2.new(1, -30, 0, 25), 20, t3.value3.white, true)
+			t3.value5(Frame, p33 or "Customize your features", UDim2.new(0, 18, 0, 36), UDim2.new(1, -30, 0, 18), 12, t3.value3.gray, false)
+
+			local ScrollingFrame = v20("ScrollingFrame", {
+				Name = "ScrollList",
+				Size = UDim2.new(1, -24, 1, -65),
+				Position = UDim2.new(0, 12, 0, 60),
+				BackgroundTransparency = 1,
+				ScrollBarThickness = 3,
+				ScrollBarImageColor3 = Color3.fromRGB(100, 100, 110),
+				BorderSizePixel = 0,
+				CanvasSize = UDim2.new(0, 0, 0, 0),
+				AutomaticCanvasSize = Enum.AutomaticSize.None,
+				Active = true,
+				ScrollingEnabled = true,
+				ScrollingDirection = Enum.ScrollingDirection.Y,
+				ElasticBehavior = Enum.ElasticBehavior.WhenScrollable,
+				ClipsDescendants = true
+			}, Frame)
+			local UIListLayout = v20("UIListLayout", {
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 10)
+			}, ScrollingFrame)
+
+			UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+				t3.value45(ScrollingFrame, UIListLayout)
+			end)
+			t3.value39[p31] = {
+				Button = TextButton2,
+				Icon = ImageLabel2,
+				Title = v148,
+				Arrow = v149,
+				Stroke = UIStroke2
+			}
+			t3.value40[p31] = Frame
+			TextButton2.Activated:Connect(function()
+				t3.value47(p31)
+			end)
+
+			return {
+				_page = Frame,
+				_scroll = ScrollingFrame,
+				_layout = UIListLayout,
+				Paragraph = function(_, p34)
+					local v153 = p34 or {}
+					local v154 = t3.value48(ScrollingFrame, v153.Title or "Information", v153.Desc or "", "info", v153.Desc and 70 or 52)
+
+					t3.value45(ScrollingFrame, UIListLayout)
+
+					return {
+						SetTitle = function(_, p35)
+							local RowTitle = v154:FindFirstChild("RowTitle")
+
+							if not RowTitle then
+								return
+							end
+
+							RowTitle.Text = tostring(p35)
+						end,
+						SetDesc = function(_, p36)
+							local v156 = v154
+
+							for _, child in ipairs(v156.GetChildren(v156)) do
+								local isTextLabel = child:IsA("TextLabel")
+
+								if isTextLabel then
+									isTextLabel = child ~= v154:FindFirstChild("RowTitle")
+								end
+
+								if isTextLabel then
+									child.Text = tostring(p36)
+
+									return
+								end
+							end
+						end
+					}
+				end,
+				Toggle = function(_, p37)
+					local v160 = p37 or {}
+					local u161 = v160.Value == true
+					local v162 = t3.value48(ScrollingFrame, v160.Title or "Toggle", v160.Desc or "", "zap", 52)
+					local v163 = v20
+					local uDim2 = UDim2.fromOffset(44, 24)
+					local uDim22 = UDim2.new(1, -54, 0, 14)
+
+					if u161 then
+						local color3 = Color3.fromRGB(220, 220, 220)
+					end
+
+					local Frame2 = v163("Frame", {
+						Size = uDim2,
+						Position = uDim22,
+						BackgroundColor3 = v205 or Color3.fromRGB(60, 60, 70)
+					}, v162)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 12)
+					}, Frame2)
+
+					local v168 = v20
+					local uDim23 = UDim2.fromOffset(18, 18)
+
+					if u161 then
+						local uDim24 = UDim2.new(1, -21, 0.5, -9)
+					end
+
+					local v209_ = v209 or UDim2.new(0, 3, 0.5, -9)
+
+					if u161 then
+						local color3 = Color3.fromRGB(20, 20, 20)
+					end
+
+					local Frame3 = v168("Frame", {
+						Size = uDim23,
+						Position = v209_,
+						BackgroundColor3 = v211 or Color3.fromRGB(200, 200, 200)
+					}, Frame2)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 9)
+					}, Frame3)
+
+					local function v174(p38, p39)
+						u161 = p38 == true
+
+						local value1 = t3.value1
+						local v176 = Frame2
+						local tweenInfo = TweenInfo.new(0.2)
+						local color3 = u161 and Color3.fromRGB(220, 220, 220) or Color3.fromRGB(60, 60, 70)
+						local v179 = value1.Create(value1, v176, tweenInfo, {
+							BackgroundColor3 = color3
+						})
+
+						v179.Play(v179)
+
+						local value14 = t3.value1
+						local v181 = Frame3
+						local tweenInfo2 = TweenInfo.new(0.2)
+						local uDim24 = u161
+
+						if uDim24 then
+							uDim24 = UDim2.new(1, -21, 0.5, -9)
+						end
+
+						local uDim25 = uDim24 or UDim2.new(0, 3, 0.5, -9)
+						local color32 = u161
+
+						if color32 then
+							color32 = Color3.fromRGB(20, 20, 20)
+						end
+
+						value14:Create(v181, tweenInfo2, {
+							Position = uDim25,
+							BackgroundColor3 = color32 or Color3.fromRGB(200, 200, 200)
+						}):Play()
+
+						if p39 then
+							p39 = v160.Callback
+						end
+
+						if not p39 then
+							return
+						end
+
+						task.spawn(function()
+							v160.Callback(u161)
+						end)
+					end
+
+					v20("TextButton", {
+						Size = UDim2.fromScale(1, 1),
+						BackgroundTransparency = 1,
+						Text = "",
+						AutoButtonColor = false
+					}, Frame2).Activated:Connect(function()
+						v174(not u161, true)
+					end)
+					t3.value45(ScrollingFrame, UIListLayout)
+
+					return {
+						SetValue = function(_, p40)
+							v174(p40, false)
+						end
+					}
+				end,
+				Dropdown = function(_, p41)
+					local v186 = p41 or {}
+					local Values = v186.Values or {}
+					local v188 = v186.Multi == true
+					local Value = v186.Value
+					local t5 = {}
+
+					if type(Value) == "table" then
+						for _, v in ipairs(Value) do
+							if table.find(Values, v) then
+								table.insert(t5, v)
+							end
+						end
+					else
+						local v193 = Value ~= nil
+
+						if v193 then
+							if Value == "" then
+								v193 = false
+							else
+								v193 = table.find(Values, Value)
+							end
+						end
+
+						if v193 then
+							t5 = { Value }
+						end
+					end
+
+					local v194 = t3.value48(ScrollingFrame, v186.Title or "Dropdown", v186.Desc or "", "chevron-down", 52)
+					local TextButton3 = v20("TextButton", {
+						Size = UDim2.new(0, 150, 0, 30),
+						Position = UDim2.new(1, -160, 0, 11),
+						BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+						BackgroundTransparency = 0.3,
+						Text = "",
+						AutoButtonColor = true,
+						ZIndex = 4
+					}, v194)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 8 or 10)
+					}, TextButton3)
+					v20("UIStroke", {
+						Color = t3.value3.border,
+						Transparency = 0.85,
+						Thickness = 1
+					}, TextButton3)
+
+					local v196 = t3.value5(TextButton3, "", UDim2.new(0, 10, 0, 0), UDim2.new(1, -28, 1, 0), 12, Color3.fromRGB(220, 220, 230), false)
+
+					v196.TextTruncate = Enum.TextTruncate.AtEnd
+
+					local v197 = t3.value5(TextButton3, "˅", UDim2.new(1, -20, 0, 0), UDim2.new(0, 20, 1, 0), 12, Color3.fromRGB(180, 180, 190), true)
+
+					v197.TextXAlignment = Enum.TextXAlignment.Center
+
+					local Frame2 = v20("Frame", {
+						Position = UDim2.new(0, 0, 0, 52),
+						Size = UDim2.new(1, 0, 0, 0),
+						BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+						BackgroundTransparency = 0.2,
+						ClipsDescendants = true,
+						ZIndex = 10,
+						Visible = false
+					}, v194)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 8 or 10)
+					}, Frame2)
+					v20("UIListLayout", {
+						SortOrder = Enum.SortOrder.LayoutOrder,
+						Padding = UDim.new(0, 2)
+					}, Frame2)
+
+					local function v199()
+						if not v186.Callback then
+							return
+						end
+
+						local v200 = v188
+
+						if v200 then
+							v200 = table.clone(t5)
+						end
+
+						local v201 = v200 or (t5[1] or "")
+
+						task.spawn(function()
+							v186.Callback(v201)
+						end)
+					end
+					local function v202()
+						v196.Text = #t5 == 0 and "--" or false or table.concat(t5, ", ")
+					end
+
+					local u203 = false
+
+					for i, Value2 in ipairs(Values) do
+						local function v206()
+							local remove
+
+							if v188 then
+								local v208 = table.find(t5, Value2)
+
+								if v208 then
+									remove = table.remove
+									remove(t5, v208)
+								else
+									remove = table.insert
+									remove(t5, Value2)
+								end
+							else
+								remove = { Value2 }
+								t5 = remove
+							end
+
+							local v210, v212, v213 = ipairs(Frame2:GetChildren())
+
+							while true do
+								local v214
+
+								v213, v214 = v210(v212, v213)
+
+								if not v213 then
+									break
+								end
+
+								if v214:IsA("TextButton") then
+									local s3 = "TextColor3"
+									local white = table.find(t5, v214.Text:sub(4))
+
+									if white then
+										white = t3.value3.white
+									end
+
+									v214[s3] = white or t3.value3.gray
+								end
+							end
+
+							v202()
+							v199()
+
+							if v188 then
+								t3.value45(ScrollingFrame, UIListLayout)
+
+								return
+							end
+
+							u203 = false
+							Frame2.Visible = false
+							t3.value1:Create(v194, TweenInfo.new(0.2), {
+								Size = UDim2.new(1, 0, 0, 52)
+							}):Play()
+
+							local value1 = t3.value1
+							local v216 = Frame2
+							local tweenInfo = TweenInfo.new(0.2)
+							local uDim2New = UDim2.new
+
+							value1.Create(value1, v216, tweenInfo, {
+								Size = uDim2New(1, 0, 0, 0)
+							}):Play()
+							v197.Text = "˅"
+							t3.value45(ScrollingFrame, UIListLayout)
+						end
+
+						v20("TextButton", {
+							Size = UDim2.new(1, 0, 0, 28),
+							BackgroundColor3 = Color3.fromRGB(35, 35, 42),
+							BackgroundTransparency = 0.4,
+							Text = "   " .. tostring(Value2),
+							TextColor3 = table.find(t5, Value2) and t3.value3.white or t3.value3.gray,
+							TextSize = 12,
+							Font = Enum.Font.Gotham,
+							TextXAlignment = Enum.TextXAlignment.Left,
+							LayoutOrder = i,
+							ZIndex = 11
+						}, Frame2).Activated:Connect(v206)
+					end
+
+					v202()
+
+					local function v219()
+						u203 = not u203
+						Frame2.Visible = true
+
+						local v220 = u203
+
+						if v220 then
+							v220 = #Values * 30
+						end
+
+						local v221 = v220 or 0
+						local value1 = t3.value1
+						local v223 = v194
+						local tweenInfo = TweenInfo.new(0.2)
+						local uDim2New = UDim2.new
+						local v226 = u203
+						local n2 = 1
+
+						if v226 then
+							v226 = 52 + v221 + 8
+						end
+
+						local t6 = {
+							Size = uDim2New(n2, 0, 0, v226 or 52)
+						}
+
+						value1.Create(value1, v223, tweenInfo, t6):Play()
+
+						local value14 = t3.value1
+						local v230 = Frame2
+						local tweenInfo2 = TweenInfo.new(0.2)
+
+						value14.Create(value14, v230, tweenInfo2, {
+							Size = UDim2.new(1, 0, 0, v221)
+						}):Play()
+						v197.Text = u203 and "˄" or "˅"
+
+						if not u203 then
+							task.delay(0.21, function()
+								local Parent = Frame2.Parent
+
+								if Parent then
+									Parent = not u203
+								end
+
+								if not Parent then
+									return
+								end
+
+								Frame2.Visible = false
+							end)
+						end
+
+						local function v233()
+							t3.value45(ScrollingFrame, UIListLayout)
+						end
+
+						task.delay(0.22, v233)
+					end
+
+					TextButton3.Activated:Connect(v219)
+					t3.value45(ScrollingFrame, UIListLayout)
+
+					return {
+						SetValue = function(_, p42)
+							t5 = {}
+
+							if type(p42) == "table" then
+								for _, v in ipairs(p42) do
+									if table.find(Values, v) then
+										local v236 = t5
+
+										table.insert(v236, v)
+									end
+								end
+							else
+								table.find(Values, p42)
+							end
+
+							v202()
+						end
+					}
+				end,
+				Slider = function(_, p43)
+					local v237 = p43 or {}
+					local Value = v237.Value or {}
+					local Min = Value.Min
+					local v240 = tonumber(Min) or 0
+					local v241 = tonumber(Value.Max) or 100
+					local Default = Value.Default or Value.Min
+					local v243 = tonumber(Default) or v240
+					local u244 = math.clamp(v243, v240, v241)
+					local v245 = t3.value48(ScrollingFrame, v237.Title or "Slider", v237.Desc or "", "sliders-horizontal", 76)
+					local TextButton3 = v20("TextButton", {
+						Size = UDim2.fromOffset(28, 26),
+						Position = UDim2.new(1, -108, 0, 9),
+						BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+						Text = "−",
+						TextColor3 = t3.value3.white,
+						TextSize = 16,
+						Font = Enum.Font.GothamBold,
+						AutoButtonColor = true
+					}, v245)
+					local v247 = u244
+					local TextBox = v20("TextBox", {
+						Size = UDim2.fromOffset(42, 26),
+						Position = UDim2.new(1, -80, 0, 9),
+						BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+						BackgroundTransparency = 0.12,
+						BorderSizePixel = 0,
+						Text = tostring(v247),
+						TextColor3 = t3.value3.white,
+						TextSize = 12,
+						Font = Enum.Font.GothamBold,
+						ClearTextOnFocus = false
+					}, v245)
+					local TextButton4 = v20("TextButton", {
+						Size = UDim2.fromOffset(28, 26),
+						Position = UDim2.new(1, -38, 0, 9),
+						BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+						Text = "+",
+						TextColor3 = t3.value3.white,
+						TextSize = 16,
+						Font = Enum.Font.GothamBold,
+						AutoButtonColor = true
+					}, v245)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 7)
+					}, TextButton3)
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 7)
+					}, TextBox)
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 7)
+					}, TextButton4)
+					TextBox.TextXAlignment = Enum.TextXAlignment.Center
+
+					local Frame2 = v20("Frame", {
+						Name = "ValueSliderTrack",
+						Size = UDim2.new(1, -64, 0, 5),
+						Position = UDim2.new(0, 52, 0, 58),
+						BackgroundColor3 = Color3.fromRGB(58, 58, 68),
+						BorderSizePixel = 0,
+						Active = true
+					}, v245)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 4)
+					}, Frame2)
+
+					local Frame3 = v20("Frame", {
+						Name = "ValueSliderFill",
+						Size = UDim2.new(0, 0, 1, 0),
+						Position = UDim2.new(0, 0, 0, 0),
+						BackgroundColor3 = Color3.fromRGB(225, 225, 235),
+						BorderSizePixel = 0
+					}, Frame2)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 4)
+					}, Frame3)
+
+					local Frame4 = v20("Frame", {
+						Name = "ValueSliderKnob",
+						Size = UDim2.fromOffset(13, 13),
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Position = UDim2.new(0, 0, 0.5, 0),
+						BackgroundColor3 = t3.value3.white,
+						BorderSizePixel = 0,
+						Active = true,
+						ZIndex = 3
+					}, Frame2)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 7)
+					}, Frame4)
+
+					local v253 = tonumber(v237.Step) or 1
+
+					local function v254()
+						local v255
+
+						if v240 < v241 then
+							local v256 = (u244 - v240) / (v241 - v240)
+
+							v255 = math.clamp(v256, 0, 1) or 0
+						else
+							v255 = 0
+						end
+
+						Frame3.Size = UDim2.new(v255, 0, 1, 0)
+						Frame4.Position = UDim2.new(v255, 0, 0.5, 0)
+
+						local v257 = u244
+
+						TextBox.Text = tostring(v257)
+					end
+
+					local u258 = false
+
+					local function v259(p44, p45)
+						local v260 = v240
+						local v261 = v241
+
+						u244 = math.clamp(p44, v260, v261)
+
+						local v262 = u244 / v253 + 0.5
+
+						u244 = math.floor(v262) * v253
+
+						local v263 = u244
+						local v264 = v240
+						local v265 = v241
+
+						u244 = math.clamp(v263, v264, v265)
+						v254()
+
+						if p45 then
+							p45 = v237.Callback
+						end
+
+						if not p45 then
+							return
+						end
+
+						task.spawn(function()
+							v237.Callback(u244)
+						end)
+					end
+					local function v266(p46)
+						u258 = true
+
+						local X = p46.Position.X
+						local X2 = Frame2.AbsoluteSize.X
+
+						if not (X2 <= 0) then
+							local v269 = (X - Frame2.AbsolutePosition.X) / X2
+							local v270 = math.clamp(v269, 0, 1)
+
+							v259(v240 + (v241 - v240) * v270, true)
+						end
+					end
+
+					Frame2.InputBegan:Connect(function(input)
+						if not (input.UserInputType == Enum.UserInputType.MouseButton1 and true or input.UserInputType == Enum.UserInputType.Touch) then
+							return
+						end
+
+						v266(input)
+					end)
+					Frame4.InputBegan:Connect(function(input)
+						if not (input.UserInputType == Enum.UserInputType.MouseButton1 and true or input.UserInputType == Enum.UserInputType.Touch) then
+							return
+						end
+
+						v266(input)
+					end)
+					t3.value2.InputChanged:Connect(function(input)
+						if not (u258 and input.UserInputType == Enum.UserInputType.MouseMovement and true or input.UserInputType == Enum.UserInputType.Touch) then
+							return
+						end
+
+						local X = input.Position.X
+						local X2 = Frame2.AbsoluteSize.X
+
+						if X2 <= 0 then
+							return
+						end
+
+						local v273 = (X - Frame2.AbsolutePosition.X) / X2
+						local v274 = math.clamp(v273, 0, 1)
+
+						v259(v240 + (v241 - v240) * v274, true)
+					end)
+					t3.value2.InputEnded:Connect(function(input)
+						local _ = input.UserInputType == Enum.UserInputType.MouseButton1 and true or input.UserInputType == Enum.UserInputType.Touch
+					end)
+					TextBox.FocusLost:Connect(function()
+						local Text = TextBox.Text
+						local v277 = tonumber(Text)
+
+						if v277 then
+							v259(math.floor(v277), true)
+						else
+							v254()
+						end
+					end)
+
+					local function v278()
+						v259(u244 - v253, true)
+					end
+
+					TextButton3.Activated:Connect(v278)
+
+					local function v279()
+						v259(u244 + v253, true)
+					end
+
+					TextButton4.Activated:Connect(v279)
+
+					local t7 = {
+						SetValue = function(_, p47)
+							local v281 = tonumber(p47) or u244
+							local v282 = v240
+							local v283 = v241
+
+							u244 = math.clamp(v281, v282, v283)
+
+							local v284 = u244 / v253 + 0.5
+
+							u244 = math.floor(v284) * v253
+
+							local v285 = u244
+							local v286 = v240
+							local v287 = v241
+
+							u244 = math.clamp(v285, v286, v287)
+							v254()
+
+							if not false then
+								return
+							end
+
+							task.spawn(function()
+								v237.Callback(u244)
+							end)
+						end
+					}
+
+					v254()
+					t3.value45(ScrollingFrame, UIListLayout)
+
+					return t7
+				end,
+				Button = function(_, p48)
+					local v288 = p48 or {}
+					local v289 = t3.value48(ScrollingFrame, v288.Title or "Button", v288.Desc or "", "mouse-pointer-click", 52)
+					local TextButton3 = v20("TextButton", {
+						Size = UDim2.new(0, 135, 0, 30),
+						Position = UDim2.new(1, -145, 0, 11),
+						BackgroundColor3 = Color3.fromRGB(45, 45, 52),
+						BackgroundTransparency = 0.15,
+						Text = v288.Title or "Run",
+						TextColor3 = t3.value3.white,
+						TextSize = 12,
+						Font = Enum.Font.GothamMedium
+					}, v289)
+
+					v20("UICorner", {
+						CornerRadius = UDim.new(0, 8)
+					}, TextButton3)
+					v20("UIStroke", {
+						Color = t3.value3.border,
+						Transparency = 0.88,
+						Thickness = 1
+					}, TextButton3)
+					TextButton3.Activated:Connect(function()
+						if not v288.Callback then
+							return
+						end
+
+						task.spawn(v288.Callback)
+					end)
+					t3.value45(ScrollingFrame, UIListLayout)
+
+					return TextButton3
+				end
+			}
+		end
+
+		local function v291()
+			local CurrentCamera = workspace.CurrentCamera
+
+			if not CurrentCamera then
+				return
+			end
+
+			local ViewportSize = CurrentCamera.ViewportSize
+
+			if t3.value2.TouchEnabled or ViewportSize.X < 760 then
+				t3.value9.Size = UDim2.new(0.96, 0, 0.86, 0)
+				t3.value9.Position = UDim2.fromScale(0.5, 0.5)
+				t3.value17.Size = UDim2.new(1, 0, 0, 60)
+				t3.value36.Size = UDim2.new(0, 125, 1, -70)
+				t3.value36.Position = UDim2.new(0, 8, 0, 60)
+				t3.value38.Size = UDim2.new(1, -145, 1, -75)
+				t3.value38.Position = UDim2.new(0, 137, 0, 60)
+				t3.value37.Visible = false
+				t3.value18.Size = UDim2.fromOffset(100, 30)
+				t3.value18.Position = UDim2.new(1, -108, 0, 10)
+
+				local UIListLayout = t3.value18:FindFirstChildOfClass("UIListLayout")
+
+				if UIListLayout then
+					UIListLayout.Padding = UDim.new(0, 7)
+
+					return
+				else
+					return
+				end
+			end
+
+			t3.value17.Size = UDim2.new(1, 0, 0, 60)
+
+			if not t3.value21 then
+				t3.value9.Size = t3.value10
+				t3.value9.Position = UDim2.fromScale(0.5, 0.5)
+			end
+
+			t3.value36.Size = UDim2.new(0, 190, 1, -70)
+			t3.value36.Position = UDim2.new(0, 15, 0, 60)
+			t3.value38.Size = UDim2.new(1, -230, 1, -75)
+			t3.value38.Position = UDim2.new(0, 215, 0, 60)
+			t3.value37.Visible = true
+			t3.value18.Size = UDim2.fromOffset(120, 32)
+			t3.value18.Position = UDim2.new(1, -135, 0, 14)
+
+			local UIListLayout = t3.value18:FindFirstChildOfClass("UIListLayout")
+
+			if not UIListLayout then
+				return
+			end
+
+			UIListLayout.Padding = UDim.new(0, 12)
+		end
+
+		if workspace.CurrentCamera then
+			workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(v291)
+		end
+
+		v291()
+
+		local t8 = {
+			Tab = function(_, p49)
+				return t3.value49(p49.Title or "Tab", p49.Icon or "house", p49.Desc or p49.SubTitle)
+			end
+		}
+		local v297 = t8.Tab(t8, {
+			Title = "Automatic",
+			Icon = "bot",
+			Desc = ""
+		})
+		local v298 = t8:Tab({
+			Title = "Shopping",
+			Icon = "shopping-cart",
+			Desc = ""
+		})
+		local v299 = t8:Tab({
+			Title = "Location",
+			Icon = "map-pinned",
+			Desc = ""
+		})
+		local v300 = t8:Tab({
+			Title = "Misc",
+			Icon = "sparkles",
+			Desc = ""
+		})
+		local v301 = t8.Tab(t8, {
+			Title = "Settings",
+			Icon = "settings",
+			Desc = ""
+		})
+
+		t3.value50 = false
+
+		function t3.value51(p50)
+			local HumanoidRootPart = p50:FindFirstChild("HumanoidRootPart")
+
+			if HumanoidRootPart then
+				HumanoidRootPart = not p50:FindFirstChild("HorrorESP")
+			end
+
+			if not HumanoidRootPart then
+				return
+			end
+
+			local Highlight = Instance.new("Highlight")
+
+			Highlight.Name = "HorrorESP"
+			Highlight.FillColor = Color3.fromRGB(255, 0, 0)
+			Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+			Highlight.FillTransparency = 0.5
+			Highlight.Parent = p50
+
+			local BillboardGui = Instance.new("BillboardGui")
+
+			BillboardGui.Name = "ESPName"
+			BillboardGui.Size = UDim2.new(0, 80, 0, 30)
+			BillboardGui.StudsOffset = Vector3.new(0, 3, 0)
+			BillboardGui.AlwaysOnTop = true
+			BillboardGui.Parent = p50.HumanoidRootPart
+
+			local TextLabel = Instance.new("TextLabel")
+
+			TextLabel.Size = UDim2.new(1, 0, 0.5, 0)
+			TextLabel.Position = UDim2.new(0, 0, 0, 0)
+			TextLabel.BackgroundTransparency = 1
+			TextLabel.Text = p50.Name
+			TextLabel.TextColor3 = Color3.new(1, 0, 0)
+			TextLabel.TextStrokeTransparency = 0
+			TextLabel.TextScaled = false
+			TextLabel.TextSize = 11
+			TextLabel.Parent = BillboardGui
+
+			local TextLabel2 = Instance.new("TextLabel")
+
+			TextLabel2.Size = UDim2.new(1, 0, 0.5, 0)
+			TextLabel2.Position = UDim2.new(0, 0, 0.5, 0)
+			TextLabel2.BackgroundTransparency = 1
+			TextLabel2.TextColor3 = Color3.new(1, 1, 1)
+			TextLabel2.TextStrokeTransparency = 0
+			TextLabel2.TextScaled = false
+			TextLabel2.TextSize = 10
+			TextLabel2.Text = "0m"
+			TextLabel2.Parent = BillboardGui
+			task.spawn(function()
+				local n3 = 9798437
+
+				while true do
+					local Parent = p50
+
+					if Parent then
+						Parent = p50.Parent
+
+						if Parent then
+							Parent = t3.value50
+						end
+					end
+
+					if not Parent then
+						return
+					end
+
+					local Character = t1.value3.Character
+					local HumanoidRootPart2
+
+					if Character then
+						HumanoidRootPart2 = Character.FindFirstChild(Character, "HumanoidRootPart")
+
+						if HumanoidRootPart2 then
+							HumanoidRootPart2 = p50:FindFirstChild("HumanoidRootPart")
+						end
+					else
+						HumanoidRootPart2 = Character
+					end
+
+					if HumanoidRootPart2 then
+						local Magnitude = (Character.HumanoidRootPart.Position - p50.HumanoidRootPart.Position).Magnitude
+						local v312 = math.floor(Magnitude)
+
+						if v312 <= 30 then
+							TextLabel2.Text = "❗ " .. v312 .. "m"
+							TextLabel2.TextColor3 = Color3.fromRGB(255, 0, 0)
+						else
+							TextLabel2.Text = v312 .. "m"
+							TextLabel2.TextColor3 = Color3.new(1, 1, 1)
+						end
+					end
+
+					n3 = task.wait
+					n3(0.1)
+				end
+			end)
+		end
+
+		local function v313()
+			local pairs_ = pairs
+			local workspace_ = workspace
+
+			for _, descendant in pairs_(workspace_.GetDescendants(workspace_)) do
+				if descendant.Name == "HorrorESP" and true or descendant.Name == "ESPName" then
+					descendant:Destroy()
+				end
+			end
+		end
+
+		t3.value52 = false
+
+		function t3.value53(p51)
+			local v318
+
+			if p51 then
+				v318 = not p51:FindFirstChild("ScrapsESP")
+			else
+				v318 = p51
+			end
+
+			if not v318 then
+				return
+			end
+
+			local Highlight = Instance.new("Highlight")
+
+			Highlight.Name = "ScrapsESP"
+			Highlight.FillColor = Color3.fromRGB(0, 255, 170)
+			Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+			Highlight.FillTransparency = 0.3
+			Highlight.Parent = p51
+
+			local BillboardGui = Instance.new("BillboardGui")
+
+			BillboardGui.Name = "ScrapsESP_GUI"
+			BillboardGui.Size = UDim2.new(0, 100, 0, 25)
+			BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+			BillboardGui.AlwaysOnTop = true
+			BillboardGui.Adornee = p51
+			BillboardGui.Parent = p51
+
+			local TextLabel = Instance.new("TextLabel")
+
+			TextLabel.Size = UDim2.new(1, 0, 1, 0)
+			TextLabel.BackgroundTransparency = 1
+			TextLabel.Text = p51.Name
+			TextLabel.TextColor3 = Color3.fromRGB(0, 255, 170)
+			TextLabel.TextStrokeTransparency = 0
+			TextLabel.TextScaled = true
+			TextLabel.Parent = BillboardGui
+		end
+
+		local function v322()
+			local pairs_ = pairs
+			local workspace_ = workspace
+
+			for _, descendant in pairs_(workspace_.GetDescendants(workspace_)) do
+				if descendant.Name == "ScrapsESP" and true or descendant.Name == "ScrapsESP_GUI" then
+					descendant:Destroy()
+				end
+			end
+		end
+
+		v298.Button(v298, {
+			Title = "Open Shop",
+			Desc = "Open Shop from anywhere",
+			Callback = function()
+				local ipairs_ = ipairs
+				local workspace_ = workspace
+				local v329, v330, v331 = ipairs_(workspace_.GetDescendants(workspace_))
+				local t9 = {}
+
+				while true do
+					local v333
+
+					v331, v333 = v329(v330, v331)
+
+					if not v331 then
+						break
+					end
+
+					local isProximityPrompt
+
+					if v333.Name == "PromptShop" then
+						isProximityPrompt = v333:IsA("ProximityPrompt")
+					else
+						isProximityPrompt = false
+					end
+
+					if isProximityPrompt then
+						table.insert(t9, v333)
+					end
+				end
+
+				if #t9 == 0 then
+					warn("[FTS HUB] Cannot find PromptShop")
+
+					return
+				end
+
+				for _, v in ipairs(t9) do
+					pcall(function()
+						fireproximityprompt(v)
+					end)
+				end
+			end
+		})
+		t3.value54 = nil
+
+		local v337 = (function()
+			local workspace_ = workspace
+			local v339 = workspace_.FindFirstChild(workspace_, "ColorCustomizations", true)
+			local t10 = {}
+
+			if v339 then
+				local GetChildren = v339.GetChildren
+
+				for _, v in ipairs(GetChildren(v339)) do
+					local Name = v.Name
+
+					table.insert(t10, Name)
+				end
+
+				table.sort(t10)
+
+				return t10
+			else
+				warn("[FTS HUB] Cannot find ColorCustomizations")
+
+				return t10
+			end
+		end)()
+		local t11 = {
+			Title = "Color Custom",
+			Desc = "Select a custom color",
+			Values = v337,
+			Value = v337[1] or "",
+			Callback = function(p52)
+				if type(p52) == "table" then
+					t3.value54 = p52[1]
+				else
+					t3.value54 = p52
+				end
+
+				print("[FTS HUB] Selected Color:", t3.value54)
+			end
+		}
+
+		v298.Dropdown(v298, t11)
+		v298:Button({
+			Title = "Select Color",
+			Desc = "Click to select and add the chosen color to Shopping",
+			Callback = function()
+				if not t3.value54 then
+					warn("[FTS HUB] Please select a color first")
+
+					return
+				end
+
+				local ColorCustomizations = workspace:FindFirstChild("ColorCustomizations", true)
+
+				if not ColorCustomizations then
+					warn("[FTS HUB] ColorCustomizations not found")
+
+					return
+				end
+
+				local v347 = ColorCustomizations:FindFirstChild(t3.value54)
+
+				if not v347 then
+					warn("[FTS HUB] Cannot find color:", t3.value54)
+
+					return
+				end
+
+				local v348, v349, v350 = ipairs(v347:GetDescendants())
+				local n4 = 0
+
+				while true do
+					local v352
+
+					v350, v352 = v348(v349, v350)
+
+					if not v350 then
+						break
+					end
+
+					if v352:IsA("ClickDetector") then
+						local ok, result = pcall(function()
+							fireclickdetector(v352)
+						end)
+
+						if ok then
+							n4 = n4 + 1
+							print("[FTS HUB] Selected:", t3.value54)
+						else
+							warn("[FTS HUB] Click failed:", result)
+						end
+					end
+				end
+
+				for _, child in ipairs(v347:GetChildren()) do
+					if child:IsA("ClickDetector") and pcall(function()
+						fireclickdetector(child)
+					end) then
+						n4 = n4 + 1
+					end
+				end
+
+				if n4 ~= 0 then
+					return
+				end
+
+				warn("[FTS HUB] No ClickDetector found for:", t3.value54)
+			end
+		})
+
+		local game_ = game
+
+		t3.value55 = game_.GetService(game_, "PathfindingService")
+
+		local game_2 = game
+
+		t3.value56 = game_2.GetService(game_2, "TweenService")
+		t3.value57 = game:GetService("Players")
+		t3.value58 = t3.value57.LocalPlayer
+		t3.value59 = Vector3.new(-402.65, 82.18, 237.77)
+		t3.value60 = false
+		v299.Button(v299, {
+			Title = "Teleport to Locker Room",
+			Desc = "Enter MonsterRoom first, then move to Locker Room",
+			Callback = function()
+				if t3.value60 then
+					return
+				end
+
+				task.spawn(function()
+					local function v359()
+						local v360 = nil
+
+						for _, descendant in ipairs(game:GetDescendants()) do
+							local Parent = descendant:IsA("ClickDetector") and descendant.Parent
+
+							if Parent then
+								Parent = descendant.Parent.Name == "MonsterRoom"
+							end
+
+							if Parent then
+								v360 = descendant
+
+								break
+							end
+						end
+
+						if not v360 then
+							error("MonsterRoom ClickDetector not found")
+						end
+
+						fireclickdetector(v360)
+						print("[FTS HUB] MonsterRoom activated")
+						task.wait(1)
+
+						local Character = t3.value58.Character or t3.value58.CharacterAdded:Wait()
+						local Humanoid = Character:WaitForChild("Humanoid")
+						local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+						task.wait(0.5)
+
+						local v367 = t3.value55:CreatePath({
+							AgentRadius = 2,
+							AgentHeight = 5,
+							AgentCanJump = true,
+							AgentCanClimb = true,
+							WaypointSpacing = 4
+						})
+
+						v367:ComputeAsync(HumanoidRootPart.Position, t3.value59)
+
+						local v368, t12, tween
+
+						if v367.Status == Enum.PathStatus.Success then
+							for _, v in ipairs(v367.GetWaypoints(v367)) do
+								if not Character.Parent or Humanoid.Health <= 0 then
+									error("Character is no longer available")
+								end
+
+								if v.Action == Enum.PathWaypointAction.Jump then
+									Humanoid.Jump = true
+								end
+
+								v368 = (HumanoidRootPart.Position - v.Position).Magnitude / 35
+								t12 = {
+									CFrame = CFrame.lookAt(v.Position, v.Position + HumanoidRootPart.CFrame.LookVector)
+								}
+								tween = t3.value56:Create(HumanoidRootPart, TweenInfo.new(v368, Enum.EasingStyle.Linear), t12)
+								tween:Play()
+
+								if tween.Completed:Wait() ~= Enum.PlaybackState.Completed then
+									error("Movement interrupted")
+								end
+							end
+
+							print("[FTS HUB] Reached Locker Room!")
+
+							return
+						end
+
+						error("Cannot find a path to Locker Room")
+
+						for _, v in ipairs(v367.GetWaypoints(v367)) do
+							if not Character.Parent or Humanoid.Health <= 0 then
+								error("Character is no longer available")
+							end
+
+							if v.Action == Enum.PathWaypointAction.Jump then
+								Humanoid.Jump = true
+							end
+
+							v368 = (HumanoidRootPart.Position - v.Position).Magnitude / 35
+							t12 = {
+								CFrame = CFrame.lookAt(v.Position, v.Position + HumanoidRootPart.CFrame.LookVector)
+							}
+							tween = t3.value56:Create(HumanoidRootPart, TweenInfo.new(v368, Enum.EasingStyle.Linear), t12)
+							tween:Play()
+
+							if tween.Completed:Wait() ~= Enum.PlaybackState.Completed then
+								error("Movement interrupted")
+							end
+						end
+
+						print("[FTS HUB] Reached Locker Room!")
+					end
+
+					local ok, result = pcall(v359)
+
+					if ok then
+						return
+					end
+
+					warn("[FTS HUB] Locker Room:", result)
+				end)
+			end
+		})
+		v299.Button(v299, {
+			Title = "Teleport To MonsterRoom",
+			Desc = "Activate MonsterRoom ClickDetector",
+			Callback = function()
+				local v377 = false
+
+				for _, descendant in ipairs(game:GetDescendants()) do
+					local Parent = descendant:IsA("ClickDetector") and descendant.Parent
+
+					if Parent then
+						Parent = descendant.Parent.Name == "MonsterRoom"
+					end
+
+					if Parent then
+						local ok, result = pcall(function()
+							fireclickdetector(descendant)
+						end)
+
+						if ok then
+							print("[FTS HUB] MonsterRoom activated:", descendant:GetFullName())
+							v377 = true
+
+							break
+						end
+
+						warn("[FTS HUB] MonsterRoom error:", result)
+					end
+				end
+
+				if v377 then
+					return
+				end
+
+				warn("[FTS HUB] MonsterRoom ClickDetector not found!")
+			end
+		})
+		v299.Button(v299, {
+			Title = "Teleport to Elevator",
+			Desc = "Move to Elevator without passing through walls",
+			Callback = function()
+				if monsterTweening then
+					return
+				end
+
+				local Character = t3.value58.Character
+				local Humanoid
+
+				if Character then
+					Humanoid = Character:FindFirstChildOfClass("Humanoid")
+				else
+					Humanoid = Character
+				end
+
+				local HumanoidRootPart
+
+				if Character then
+					HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+				else
+					HumanoidRootPart = Character
+				end
+
+				if not (Humanoid and HumanoidRootPart) then
+					return
+				end
+
+				monsterTweening = true
+				task.spawn(function()
+					local function v386()
+						local vector3 = Vector3.new(-221.1, 92.1, 175.5)
+						local v388 = t3.value55:CreatePath({
+							AgentRadius = 2,
+							AgentHeight = 5,
+							AgentCanJump = true,
+							AgentCanClimb = true,
+							WaypointSpacing = 4
+						})
+
+						v388:ComputeAsync(HumanoidRootPart.Position, vector3)
+
+						local v389, value56, v391, tweenInfo, cFrameNew, v394
+
+						if v388.Status == Enum.PathStatus.Success then
+							v444 = v388.GetWaypoints
+
+							for _, v in ipairs(v444(v388)) do
+								if not Character.Parent or Humanoid.Health <= 0 then
+									return
+								end
+
+								if v.Action == Enum.PathWaypointAction.Jump then
+									Humanoid.Jump = true
+								end
+
+								v389 = (HumanoidRootPart.Position - v.Position).Magnitude / 35
+								value56 = t3.value56
+								v391 = HumanoidRootPart
+								tweenInfo = TweenInfo.new(v389, Enum.EasingStyle.Linear)
+								cFrameNew = CFrame.new
+								v394 = value56.Create(value56, v391, tweenInfo, {
+									CFrame = cFrameNew(v.Position)
+								})
+								v394:Play()
+								v394.Completed:Wait()
+							end
+
+							return
+						end
+
+						error("Cannot find path to Elevator")
+
+						local GetWaypoints = v388.GetWaypoints
+
+						for _, v in ipairs(GetWaypoints(v388)) do
+							if not Character.Parent or Humanoid.Health <= 0 then
+								return
+							end
+
+							if v.Action == Enum.PathWaypointAction.Jump then
+								Humanoid.Jump = true
+							end
+
+							v389 = (HumanoidRootPart.Position - v.Position).Magnitude / 35
+							value56 = t3.value56
+							v391 = HumanoidRootPart
+							tweenInfo = TweenInfo.new(v389, Enum.EasingStyle.Linear)
+							cFrameNew = CFrame.new
+							v394 = value56.Create(value56, v391, tweenInfo, {
+								CFrame = cFrameNew(v.Position)
+							})
+							v394:Play()
+							v394.Completed:Wait()
+						end
+					end
+
+					local ok, result = pcall(v386)
+
+					monsterTweening = false
+
+					if ok then
+						return
+					end
+
+					warn("[FTS HUB] Elevator:", result)
+				end)
+			end
+		})
+		v300.Toggle(v300, {
+			Title = "Monster ESP + Model",
+			Desc = "Highlights all monsters",
+			Value = false,
+			Callback = function(p53)
+				t3.value50 = p53
+
+				if not t3.value50 then
+					v313()
+
+					return
+				end
+
+				task.spawn(function()
+					while t3.value50 do
+						local pairs_ = pairs
+						local workspace_ = workspace
+
+						for _, descendant in pairs_(workspace_.GetDescendants(workspace_)) do
+							local isModel = descendant:IsA("Model")
+
+							if isModel then
+								isModel = descendant.FindFirstChild(descendant, "Humanoid")
+
+								if isModel then
+									isModel = not t3.value57:GetPlayerFromCharacter(descendant)
+								end
+							end
+
+							if isModel then
+								pairs_ = t3.value51
+								pairs_(descendant)
+							end
+						end
+
+						task.wait(1)
+					end
+				end)
+			end
+		})
+		v300.Toggle(v300, {
+			Title = "Scraps ESP",
+			Desc = "Displays all items inside",
+			Value = false,
+			Callback = function(p54)
+				t3.value52 = p54
+
+				if not t3.value52 then
+					v322()
+
+					return
+				end
+
+				task.spawn(function()
+					while t3.value52 do
+						local Scraps = workspace:FindFirstChild("Scraps")
+
+						if Scraps then
+							for _, descendant in pairs(Scraps:GetDescendants()) do
+								if descendant:IsA("BasePart") then
+									t3.value53(descendant)
+								end
+							end
+						end
+
+						task.wait(1)
+					end
+				end)
+			end
+		})
+		t3.value61 = game:GetService("Players")
+		t3.value62 = t3.value61.LocalPlayer
+
+		local game_3 = game
+		local v411 = game_3.GetService(game_3, "CoreGui")
+
+		t3.value63 = false
+		t3.value64 = {}
+		t3.value65 = Instance.new("Folder")
+		t3.value65.Name = "FTS_PlayerESP"
+		t3.value65.Parent = v411
+
+		function t3.value66(p55)
+			if not t3.value64[p55] then
+				return
+			end
+
+			t3.value64[p55]:Destroy()
+			t3.value64[p55] = nil
+		end
+		function t3.value67(p56)
+			if p56 == t3.value62 then
+				return
+			end
+
+			if not t3.value63 then
+				return
+			end
+
+			t3.value66(p56)
+
+			local Character = p56.Character
+
+			if not Character then
+				return
+			end
+
+			local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+			local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+
+			if not (Humanoid and HumanoidRootPart) then
+				return
+			end
+
+			local Folder = Instance.new("Folder")
+
+			Folder.Name = p56.Name
+			Folder.Parent = t3.value65
+
+			local Highlight = Instance.new("Highlight")
+
+			Highlight.Name = "PlayerHighlight"
+			Highlight.Adornee = Character
+			Highlight.FillColor = Color3.fromRGB(170, 80, 255)
+			Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+			Highlight.FillTransparency = 0.65
+			Highlight.OutlineTransparency = 0
+			Highlight.Parent = Folder
+
+			local BillboardGui = Instance.new("BillboardGui")
+
+			BillboardGui.Name = "PlayerInfo"
+			BillboardGui.Adornee = HumanoidRootPart
+			BillboardGui.Size = UDim2.new(0, 180, 0, 35)
+			BillboardGui.StudsOffset = Vector3.new(0, 3, 0)
+			BillboardGui.AlwaysOnTop = true
+			BillboardGui.Parent = Folder
+
+			local TextLabel = Instance.new("TextLabel")
+
+			TextLabel.Size = UDim2.new(1, 0, 1, 0)
+			TextLabel.BackgroundTransparency = 1
+			TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			TextLabel.TextStrokeTransparency = 0
+			TextLabel.TextSize = 14
+			TextLabel.Font = Enum.Font.GothamBold
+			TextLabel.Parent = BillboardGui
+			t3.value64[p56] = Folder
+			task.spawn(function()
+				local n5 = 8322359
+
+				while true do
+					local value63 = t3.value63
+
+					if value63 then
+						local v421 = p56
+
+						if t3.value64[v421] == Folder then
+							value63 = Character.Parent
+						else
+							value63 = false
+						end
+					end
+
+					if not value63 then
+						return
+					end
+
+					local Character2 = t3.value62.Character
+
+					if Character2 then
+						Character2 = Character2:FindFirstChild("HumanoidRootPart")
+					end
+
+					local Parent
+
+					if Character2 then
+						Parent = HumanoidRootPart.Parent
+					else
+						Parent = Character2
+					end
+
+					if Parent then
+						local Magnitude = (Character2.Position - HumanoidRootPart.Position).Magnitude
+
+						TextLabel.Text = p56.Name .. " [" .. math.floor(Magnitude) .. "m]"
+					else
+						TextLabel.Text = p56.Name
+					end
+
+					n5 = task.wait
+					n5(0.25)
+				end
+			end)
+		end
+
+		local function v425()
+			local ipairs_ = ipairs
+			local value61 = t3.value61
+
+			for _, player in ipairs_(value61.GetPlayers(value61)) do
+				if player ~= t3.value62 then
+					t3.value67(player)
+				end
+			end
+		end
+
+		v300.Toggle(v300, {
+			Title = "Player ESP",
+			Desc = "Show player outlines, names and distance",
+			Value = false,
+			Callback = function(p57)
+				t3.value63 = p57
+
+				if p57 then
+					v425()
+				else
+					for k in pairs(t3.value64) do
+						t3.value66(k)
+					end
+				end
+			end
+		})
+		t3.value61.PlayerAdded:Connect(function(player)
+			player.CharacterAdded:Connect(function()
+				task.wait(1)
+
+				if not t3.value63 then
+					return
+				end
+
+				t3.value67(player)
+			end)
+		end)
+
+		for _, player in ipairs(t3.value61:GetPlayers()) do
+			player.CharacterAdded:Connect(function()
+				task.wait(1)
+
+				if not t3.value63 then
+					return
+				end
+
+				t3.value67(player)
+			end)
+		end
+
+		t3.value61.PlayerRemoving:Connect(function(player)
+			t3.value66(player)
+		end)
+		v300.Button(v300, {
+			Title = "Open Camera",
+			Desc = "Find and activate Camera / Security prompts",
+			Callback = function()
+				local ipairs_ = ipairs
+				local workspace_ = workspace
+				local n6 = 0
+
+				for _, descendant in ipairs_(workspace_.GetDescendants(workspace_)) do
+					if descendant:IsA("ProximityPrompt") then
+						local Parent = descendant.Parent
+
+						if Parent then
+							Parent = descendant.Parent.Name:lower()
+						end
+
+						local v439 = Parent or ""
+						local v440 = descendant.Name:lower()
+						local v441 = (descendant.ActionText or ""):lower()
+
+						if v439:find("cam") or (v439:find("sec") or (v440:find("cam") or (v441:find("camera") or v441:find("view")))) then
+							n6 = n6 + 1
+							pcall(function()
+								local fireproximityprompt_ = fireproximityprompt
+
+								if typeof(fireproximityprompt_) == "function" then
+									fireproximityprompt(descendant)
+								else
+									descendant:InputHoldBegin()
+									task.wait(descendant.HoldDuration)
+									descendant:InputHoldEnd()
+								end
+							end)
+						end
+					end
+				end
+
+				print("[FTS HUB] Camera prompts found: " .. n6)
+			end
+		})
+		t3.value68 = game:GetService("UserInputService")
+		t3.value69 = game:GetService("RunService")
+		game:GetService("Players")
+		t3.value70 = false
+		t3.value71 = 50
+		t3.value72 = nil
+		t3.value73 = nil
+		t3.value74 = nil
+		t3.value75 = nil
+		t3.value76 = nil
+		t3.value77 = nil
+		t3.value78 = {
+			F = 0,
+			B = 0,
+			L = 0,
+			R = 0,
+			U = 0,
+			D = 0
+		}
+		t3.value79 = nil
+
+		local function v443()
+			t3.value70 = false
+
+			if t3.value72 then
+				t3.value72:Disconnect()
+			end
+
+			if t3.value73 then
+				t3.value73:Destroy()
+				t3.value73 = nil
+			end
+
+			if t3.value74 then
+				t3.value74:Destroy()
+				t3.value74 = nil
+			end
+
+			local value76 = t3.value76
+
+			if value76 then
+				value76 = t3.value76.Parent
+			end
+
+			if value76 then
+				t3.value76.PlatformStand = false
+				t3.value76.AutoRotate = true
+				t3.value76:ChangeState(Enum.HumanoidStateType.GettingUp)
+			end
+
+			if not t3.value79 then
+				for k in pairs(t3.value78) do
+					t3.value78[k] = 0
+				end
+
+				return
+			end
+
+			t3.value79:Destroy()
+			t3.value79 = nil
+
+			for k in pairs(t3.value78) do
+				t3.value78[k] = 0
+			end
+		end
+
+		function t3.value80()
+			if not t3.value68.TouchEnabled then
+				return
+			end
+
+			t3.value79 = Instance.new("ScreenGui")
+			t3.value79.Name = "FTS_FlyControls"
+			t3.value79.ResetOnSpawn = false
+			t3.value79.Parent = t3.value62:WaitForChild("PlayerGui")
+
+			local function v447(p58, p59, p60, p61)
+				local TextButton2 = Instance.new("TextButton")
+
+				TextButton2.Name = p58
+				TextButton2.Size = UDim2.fromOffset(55, 55)
+				TextButton2.Position = p60
+				TextButton2.AnchorPoint = Vector2.new(1, 1)
+				TextButton2.BackgroundColor3 = Color3.fromRGB(35, 25, 55)
+				TextButton2.BackgroundTransparency = 0.15
+				TextButton2.Text = p59
+				TextButton2.TextColor3 = Color3.new(1, 1, 1)
+				TextButton2.TextSize = 22
+				TextButton2.Font = Enum.Font.GothamBold
+				TextButton2.Parent = t3.value79
+
+				local UICorner = Instance.new("UICorner")
+
+				UICorner.CornerRadius = UDim.new(1, 0)
+				UICorner.Parent = TextButton2
+
+				local UIStroke2 = Instance.new("UIStroke")
+
+				UIStroke2.Color = Color3.fromRGB(140, 90, 255)
+				UIStroke2.Thickness = 1.5
+				UIStroke2.Parent = TextButton2
+				TextButton2.InputBegan:Connect(function(input)
+					if not (input.UserInputType == Enum.UserInputType.Touch and true or input.UserInputType == Enum.UserInputType.MouseButton1) then
+						return
+					end
+
+					local v451 = p61
+
+					t3.value78[v451] = 1
+				end)
+				TextButton2.InputEnded:Connect(function(input)
+					if not (input.UserInputType == Enum.UserInputType.Touch and true or input.UserInputType == Enum.UserInputType.MouseButton1) then
+						return
+					end
+
+					local v452 = p61
+
+					t3.value78[v452] = 0
+				end)
+			end
+
+			v447("FlyUp", "▲", UDim2.new(1, -25, 1, -160), "U")
+			v447("FlyDown", "▼", UDim2.new(1, -25, 1, -90), "D")
+		end
+		function t3.value81()
+			local Character = t3.value62.Character
+			local Humanoid
+
+			if Character then
+				Humanoid = Character:FindFirstChildOfClass("Humanoid")
+			else
+				Humanoid = Character
+			end
+
+			local HumanoidRootPart
+
+			if Character then
+				HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+			else
+				HumanoidRootPart = Character
+			end
+
+			if not (Humanoid and HumanoidRootPart) then
+				return
+			end
+
+			v443()
+			t3.value70 = true
+			t3.value75 = Character
+			t3.value76 = Humanoid
+			t3.value77 = HumanoidRootPart
+			t3.value73 = Instance.new("BodyGyro")
+			t3.value73.P = 90000
+			t3.value73.MaxTorque = Vector3.new(90000, 90000, 90000)
+			t3.value73.CFrame = HumanoidRootPart.CFrame
+			t3.value73.Parent = HumanoidRootPart
+			t3.value74 = Instance.new("BodyVelocity")
+			t3.value74.P = 90000
+			t3.value74.MaxForce = Vector3.new(90000, 90000, 90000)
+			t3.value74.Velocity = Vector3.zero
+			t3.value74.Parent = HumanoidRootPart
+			Humanoid.PlatformStand = true
+			t3.value80()
+			t3.value69.RenderStepped:Connect(function(dt)
+				if not t3.value70 or (not t3.value77 or (not t3.value77.Parent or (not t3.value76 or t3.value76.Health <= 0))) then
+					v443()
+
+					return
+				end
+
+				local CurrentCamera = workspace.CurrentCamera
+
+				if not CurrentCamera then
+					return
+				end
+
+				local v457 = t3.value78.F - t3.value78.B
+				local v458 = t3.value78.R - t3.value78.L
+				local v459 = t3.value78.U - t3.value78.D
+
+				if t3.value68:IsKeyDown(Enum.KeyCode.W) then
+					v457 = v457 + 1
+				end
+
+				if t3.value68:IsKeyDown(Enum.KeyCode.S) then
+					v457 = v457 - 1
+				end
+
+				if t3.value68:IsKeyDown(Enum.KeyCode.D) then
+					v458 = v458 + 1
+				end
+
+				if t3.value68:IsKeyDown(Enum.KeyCode.A) then
+					v458 = v458 - 1
+				end
+
+				if t3.value68:IsKeyDown(Enum.KeyCode.Space) then
+					v459 = v459 + 1
+				end
+
+				if t3.value68:IsKeyDown(Enum.KeyCode.LeftShift) then
+					v459 = v459 - 1
+				end
+
+				local vector3 = Vector3.zero
+
+				if t3.value68.TouchEnabled then
+					vector3 = t3.value76.MoveDirection
+				end
+
+				local LookVector = CurrentCamera.CFrame.LookVector
+				local RightVector = CurrentCamera.CFrame.RightVector
+				local v463 = LookVector * v457 + RightVector * v458 + vector3 + Vector3.new(0, v459, 0)
+
+				if v463.Magnitude > 1 then
+					v463 = v463.Unit
+				end
+
+				local velocity = v463 * t3.value71
+				local raycastParams = RaycastParams.new()
+
+				raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+				raycastParams.FilterDescendantsInstances = { t3.value75 }
+
+				local v466 = velocity.Magnitude * dt + 2
+
+				if not (velocity.Magnitude > 0 and workspace:Raycast(t3.value77.Position, velocity.Unit * v466, raycastParams)) then
+					t3.value74.Velocity = velocity
+					t3.value73.CFrame = CurrentCamera.CFrame
+
+					return
+				end
+
+				velocity = Vector3.zero
+				t3.value74.Velocity = velocity
+				t3.value73.CFrame = CurrentCamera.CFrame
+			end)
+		end
+
+		v300.Toggle(v300, {
+			Title = "Fly",
+			Desc = "Camera-relative flying for PC and Mobile",
+			Value = false,
+			Callback = function(p62)
+				if p62 then
+					t3.value81()
+				else
+					v443()
+				end
+			end
+		})
+
+		local game_4 = game
+
+		t3.value82 = game_4.GetService(game_4, "TeleportService")
+		t3.value83 = game:GetService("HttpService")
+		t3.value84 = game:GetService("Players")
+		t3.value85 = t3.value84.LocalPlayer
+		t3.value86 = false
+		v300.Button(v300, {
+			Title = "Server Hop",
+			Desc = "Find and join another public server",
+			Callback = function()
+				if t3.value86 then
+					return
+				end
+
+				task.spawn(function()
+					local function v468()
+						local v469 = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&excludeFullGames=true"
+						local request_ = request
+						local Body, v472, id
+
+						if request_ then
+							if request_ then
+								Body = request_({
+									Url = v469,
+									Method = "GET"
+								}).Body
+							else
+								Body = game:HttpGet(v469)
+							end
+
+							v537 = t3.value83
+							v538 = v537.JSONDecode(v537, Body)
+							v539 = {}
+
+							for _, v in ipairs(v538.data) do
+								if v.id == game.JobId then
+									v472 = false
+								else
+									v472 = v.playing < v.maxPlayers
+								end
+
+								if v472 then
+									id = v.id
+									table.insert(v539, id)
+								end
+							end
+
+							if #v539 ~= 0 then
+								v542 = v539[math.random(1, #v539)]
+								t3.value82:TeleportToPlaceInstance(game.PlaceId, v542, t3.value85)
+
+								return
+							end
+
+							error("No other available servers found")
+							v542 = v539[math.random(1, #v539)]
+							t3.value82:TeleportToPlaceInstance(game.PlaceId, v542, t3.value85)
+
+							return
+						end
+
+						request_ = http_request
+
+						if request_ then
+							if request_ then
+								Body = request_({
+									Url = v469,
+									Method = "GET"
+								}).Body
+							else
+								Body = game:HttpGet(v469)
+							end
+
+							v537 = t3.value83
+							v538 = v537.JSONDecode(v537, Body)
+							v539 = {}
+
+							for _, v in ipairs(v538.data) do
+								if v.id == game.JobId then
+									v472 = false
+								else
+									v472 = v.playing < v.maxPlayers
+								end
+
+								if v472 then
+									id = v.id
+									table.insert(v539, id)
+								end
+							end
+
+							if #v539 ~= 0 then
+								v542 = v539[math.random(1, #v539)]
+								t3.value82:TeleportToPlaceInstance(game.PlaceId, v542, t3.value85)
+
+								return
+							end
+
+							error("No other available servers found")
+							v542 = v539[math.random(1, #v539)]
+							t3.value82:TeleportToPlaceInstance(game.PlaceId, v542, t3.value85)
+
+							return
+						end
+
+						request_ = syn
+
+						if not request_ then
+							if request_ then
+								Body = request_({
+									Url = v469,
+									Method = "GET"
+								}).Body
+							else
+								Body = game:HttpGet(v469)
+							end
+
+							v537 = t3.value83
+							v538 = v537.JSONDecode(v537, Body)
+							v539 = {}
+
+							for _, v in ipairs(v538.data) do
+								if v.id == game.JobId then
+									v472 = false
+								else
+									v472 = v.playing < v.maxPlayers
+								end
+
+								if v472 then
+									id = v.id
+									table.insert(v539, id)
+								end
+							end
+
+							if #v539 ~= 0 then
+								v542 = v539[math.random(1, #v539)]
+								t3.value82:TeleportToPlaceInstance(game.PlaceId, v542, t3.value85)
+
+								return
+							end
+
+							error("No other available servers found")
+							v542 = v539[math.random(1, #v539)]
+							t3.value82:TeleportToPlaceInstance(game.PlaceId, v542, t3.value85)
+
+							return
+						end
+
+						request_ = syn.request
+
+						if request_ then
+							Body = request_({
+								Url = v469,
+								Method = "GET"
+							}).Body
+						else
+							Body = game:HttpGet(v469)
+						end
+
+						local value83 = t3.value83
+						local v481 = value83.JSONDecode(value83, Body)
+						local t13 = {}
+
+						for _, v in ipairs(v481.data) do
+							if v.id == game.JobId then
+								v472 = false
+							else
+								v472 = v.playing < v.maxPlayers
+							end
+
+							if v472 then
+								id = v.id
+								table.insert(t13, id)
+							end
+						end
+
+						if #t13 ~= 0 then
+							v542 = t13[math.random(1, #t13)]
+							t3.value82:TeleportToPlaceInstance(game.PlaceId, v542, t3.value85)
+
+							return
+						end
+
+						error("No other available servers found")
+
+						local v485 = t13[math.random(1, #t13)]
+
+						t3.value82:TeleportToPlaceInstance(game.PlaceId, v485, t3.value85)
+					end
+
+					local ok, result = pcall(v468)
+
+					if ok then
+						return
+					end
+
+					warn("[FTS HUB] Server Hop Error:", result)
+				end)
+			end
+		})
+		v300.Button(v300, {
+			Title = "Rejoin",
+			Desc = "Reconnect to the current server",
+			Callback = function()
+				t3.value82:TeleportToPlaceInstance(game.PlaceId, game.JobId, t3.value85)
+			end
+		})
+		t3.value87 = game:GetService("PathfindingService")
+
+		local game_5 = game
+
+		t3.value88 = game_5.GetService(game_5, "StarterGui")
+		t3.value89 = true
+		t3.value90 = false
+		t3.value91 = 100
+		t3.value92 = 3
+		t3.value93 = {}
+		t3.value94 = 0
+
+		local function v489(p63)
+			print("[FTS] " .. p63)
+
+			local value89 = t3.value89
+
+			if value89 then
+				value89 = os.clock() - t3.value94 > 1
+			end
+
+			if not value89 then
+				return
+			end
+
+			os.clock()
+
+			local function v491()
+				local t14 = {
+					Title = "FTS",
+					Text = p63,
+					Duration = 3
+				}
+
+				t3.value88:SetCore("SendNotification", t14)
+			end
+
+			pcall(v491)
+		end
+		local function v493(p64)
+			local t15 = { p64 }
+			local Scraps = workspace:FindFirstChild("Scraps")
+			local Character, Character2
+
+			if not Scraps then
+				v559 = ipairs
+				v560 = t3.value84
+
+				for _, player in v559(v560.GetPlayers(v560)) do
+					Character = player.Character
+
+					if Character then
+						Character = player.Character ~= p64
+					end
+
+					if Character then
+						Character2 = player.Character
+						table.insert(t15, Character2)
+					end
+				end
+
+				return t15
+			end
+
+			table.insert(t15, Scraps)
+
+			local ipairs_ = ipairs
+			local value84 = t3.value84
+
+			for _, player in ipairs_(value84.GetPlayers(value84)) do
+				Character = player.Character
+
+				if Character then
+					Character = player.Character ~= p64
+				end
+
+				if Character then
+					Character2 = player.Character
+					table.insert(t15, Character2)
+				end
+			end
+
+			return t15
+		end
+
+		t3.value95 = RaycastParams.new()
+		t3.value95.FilterType = Enum.RaycastFilterType.Exclude
+		t3.value95.RespectCanCollide = true
+
+		local t16 = { Vector3.new(0, 0, -1.2) }
+
+		t3.value96 = {
+			Vector3.new(0, -1.5, 0),
+			Vector3.new(0, 0, 0),
+			Vector3.new(0, 1.5, 0),
+			Vector3.new(1.2, 0, 0),
+			Vector3.new(-1.2, 0, 0),
+			Vector3.new(0, 0, 1.2),
+			unpack_(t16)
+		}
+
+		function t3.value97(p65, p66, p67)
+			t3.value95.FilterDescendantsInstances = p67
+
+			local v505 = p66 - p65
+
+			for _, v in ipairs(t3.value96) do
+				if workspace:Raycast(p65 + v, v505, t3.value95) then
+					return false
+				end
+			end
+
+			return true
+		end
+		function t3.value98(p68, p69, p70)
+			local Character = t3.value85.Character
+
+			if Character then
+				Character = Character:FindFirstChildOfClass("Humanoid")
+			end
+
+			if not (p68 and p68.Parent) then
+				return false
+			end
+
+			local Magnitude = (p68.Position - p69).Magnitude
+
+			if Magnitude < 0.5 then
+				return true
+			end
+
+			local AutoRotate
+
+			if Character then
+				AutoRotate = Character.AutoRotate
+			else
+				AutoRotate = Character
+			end
+
+			if Character then
+				Character.AutoRotate = false
+				Character:ChangeState(Enum.HumanoidStateType.Physics)
+			end
+
+			local Attachment = Instance.new("Attachment")
+
+			Attachment.Name = "FTS_FlyAttachment"
+			Attachment.Parent = p68
+
+			local LinearVelocity = Instance.new("LinearVelocity")
+
+			LinearVelocity.Name = "FTS_FlyVelocity"
+			LinearVelocity.Attachment0 = Attachment
+			LinearVelocity.RelativeTo = Enum.ActuatorRelativeTo.World
+			LinearVelocity.MaxForce = math.huge
+			LinearVelocity.VectorVelocity = Vector3.zero
+			LinearVelocity.Parent = p68
+
+			local Rotation = p68.CFrame.Rotation
+			local value56 = t3.value56
+			local tweenInfoNew = TweenInfo.new
+			local v516 = Magnitude / math.max(p70, 1)
+			local tweenInfo = tweenInfoNew(math.max(v516, 0.02), Enum.EasingStyle.Linear)
+			local CFrame_ = CFrame
+			local v519 = value56.Create(value56, p68, tweenInfo, {
+				CFrame = CFrame_.new(p69) * Rotation
+			})
+			local wait = v519:Play()
+
+			while true do
+				local v521 = v519.PlaybackState == Enum.PlaybackState.Playing
+
+				if v521 then
+					v521 = t3.value90
+
+					if v521 then
+						v521 = p68.Parent
+					end
+				end
+
+				if not v521 then
+					break
+				end
+
+				LinearVelocity.VectorVelocity = Vector3.zero
+				wait = task.wait
+				wait()
+			end
+
+			if v519.PlaybackState == Enum.PlaybackState.Playing then
+				v519:Cancel()
+			end
+
+			if LinearVelocity.Parent then
+				LinearVelocity:Destroy()
+			end
+
+			if Attachment.Parent then
+				Attachment:Destroy()
+			end
+
+			local Parent
+
+			if Character then
+				Parent = Character.Parent
+			else
+				Parent = Character
+			end
+
+			if not Parent then
+				return t3.value90
+			end
+
+			Character.AutoRotate = AutoRotate
+			Character:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+			return t3.value90
+		end
+
+		local function v523(p71, p72)
+			local t17 = {
+				{
+					AgentRadius = 2,
+					AgentHeight = 5,
+					AgentCanJump = true
+				},
+				{
+					AgentRadius = 1,
+					AgentHeight = 3,
+					AgentCanJump = true
+				}
+			}
+			local s4 = "?"
+
+			for _, v in ipairs(p72) do
+				for _, v2 in ipairs(t17) do
+					local v530 = t3.value87:CreatePath(v2)
+					local ok = pcall(function()
+						v530:ComputeAsync(p71, v)
+					end)
+					local v532
+
+					if ok then
+						v532 = v530.Status == Enum.PathStatus.Success
+					else
+						v532 = ok
+					end
+
+					if v532 then
+						return v530
+					end
+
+					if ok then
+						local Status = v530.Status
+
+						ok = tostring(Status)
+					end
+
+					s4 = ok or "ComputeAsync error"
+				end
+			end
+
+			return nil, s4
+		end
+
+		t3.value99 = {}
+		t3.value100 = 0
+
+		function t3.value101(p73)
+			if not (p73 or os.clock() - t3.value100 > 1) then
+				return t3.value99
+			end
+
+			t3.value99 = {}
+
+			local Scraps = workspace:FindFirstChild("Scraps")
+
+			if not Scraps then
+				return t3.value99
+			end
+
+			for _, descendant in ipairs(Scraps.GetDescendants(Scraps)) do
+				if descendant:IsA("BasePart") then
+					local value99 = t3.value99
+
+					table.insert(value99, descendant)
+				end
+			end
+
+			return t3.value99
+		end
+		function t3.value102(p74, _)
+			local now = os.clock()
+			local ipairs_ = ipairs
+			local t18 = {}
+
+			for _, v in ipairs_(t3.value101()) do
+				local Parent = v.Parent
+
+				if Parent then
+					Parent = not t3.value93[v]
+
+					if Parent then
+						Parent = now < t3.value93[v]
+					end
+				end
+
+				if Parent then
+					ipairs_ = table.insert
+					ipairs_(t18, {
+						Scrap = v,
+						Distance = (v.Position - p74.Position).Magnitude
+					})
+				end
+			end
+
+			table.sort(t18, function(p75, p76)
+				return p75.Distance < p76.Distance
+			end)
+
+			local v544 = #t18
+
+			for i = 1, math.min(v544, 15) do
+				local Scrap = t18[i].Scrap
+				local Parent
+
+				if Scrap then
+					Parent = Scrap.Parent
+				else
+					Parent = Scrap
+				end
+
+				if Parent then
+					return Scrap, false
+				end
+			end
+
+			return nil, false
+		end
+		function t3.value103(p77, p78, p79, _, p80)
+			if not t3.value90 then
+				return false, "Stopped"
+			end
+
+			local t19 = { p79 }
+			local raycastParams = RaycastParams.new()
+
+			raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+			raycastParams.FilterDescendantsInstances = p80
+
+			local workspace_ = workspace
+			local v551 = p79 + Vector3.new(0, 2, 0)
+			local Vector3_ = Vector3
+			local v553 = workspace_.Raycast(workspace_, v551, Vector3_.new(0, -40, 0), raycastParams)
+			local v554, waypoints, ipairs_, v557
+
+			if not v553 then
+				v631, v632 = v523(p77.Position, t19)
+
+				if v631 then
+					v554 = p78.HipHeight + p77.Size.Y / 2 + t3.value92
+					waypoints = v631:GetWaypoints()
+					ipairs_ = ipairs
+
+					for _, waypoint in ipairs_(waypoints) do
+						if not t3.value90 or (not p77.Parent or p78.Health <= 0) then
+							return false, "Stopped"
+						end
+
+						if waypoint.Action == Enum.PathWaypointAction.Jump then
+							p78.Jump = true
+						end
+
+						v557 = waypoint.Position + Vector3.new(0, v554, 0)
+						ipairs_ = t3.value98
+
+						if not ipairs_(p77, v557, t3.value91) then
+							return false, "Stopped"
+						end
+					end
+
+					return true
+				else
+					return false, "No path found (" .. tostring(v632) .. ")"
+				end
+			end
+
+			local v561 = v553.Position + Vector3.new(0, 0.5, 0)
+
+			table.insert(t19, 1, v561)
+
+			local v562, v563 = v523(p77.Position, t19)
+
+			if v562 then
+				v554 = p78.HipHeight + p77.Size.Y / 2 + t3.value92
+				waypoints = v562:GetWaypoints()
+				ipairs_ = ipairs
+
+				for _, waypoint in ipairs_(waypoints) do
+					if not t3.value90 or (not p77.Parent or p78.Health <= 0) then
+						return false, "Stopped"
+					end
+
+					if waypoint.Action == Enum.PathWaypointAction.Jump then
+						p78.Jump = true
+					end
+
+					v557 = waypoint.Position + Vector3.new(0, v554, 0)
+					ipairs_ = t3.value98
+
+					if not ipairs_(p77, v557, t3.value91) then
+						return false, "Stopped"
+					end
+				end
+
+				return true
+			else
+				return false, "No path found (" .. tostring(v563) .. ")"
+			end
+		end
+		function t3.value104(p81, p82, p83)
+			if t3.value90 and (p81 and p81.Parent) then
+				local Position2 = p81.Position
+				local v566 = p82.HipHeight + p81.Size.Y / 2 + t3.value92
+				local raycastParams = RaycastParams.new()
+
+				raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+				raycastParams.FilterDescendantsInstances = p83
+				raycastParams.RespectCanCollide = true
+
+				local s5 = "RespectCanCollide"
+				local n7 = 10
+
+				for i = 1, 8 do
+					if not t3.value90 or (not p81.Parent or p82.Health <= 0) then
+						return
+					end
+
+					local v571 = i * 45
+					local v572 = math.rad(v571)
+					local v573 = Position2 + Vector3.new(math.cos(v572) * n7, 0, math.sin(v572) * n7)
+
+					s5 = workspace
+
+					local v574 = v573 + Vector3.new(0, 8, 0)
+					local Vector3_ = Vector3
+					local v576 = s5.Raycast(s5, v574, Vector3_.new(0, -35, 0), raycastParams)
+
+					if v576 then
+						local v577 = v576.Position + Vector3.new(0, v566, 0)
+
+						s5 = t3.value97
+
+						if s5(p81.Position, v577, p83) then
+							t3.value98(p81, v577, t3.value91)
+							s5 = task.wait
+							s5(0.15)
+						end
+					end
+				end
+			end
+		end
+
+		local function v578(p84)
+			local ProximityPrompt = p84:FindFirstChildWhichIsA("ProximityPrompt", true)
+			local v580
+
+			if ProximityPrompt then
+				if ProximityPrompt then
+					ProximityPrompt.HoldDuration = 0
+					ProximityPrompt.RequiresLineOfSight = false
+					fireproximityprompt(ProximityPrompt)
+
+					return true
+				else
+					v580 = p84.FindFirstChildWhichIsA(p84, "ClickDetector", true)
+
+					if v580 then
+						fireclickdetector(v580)
+
+						return true
+					else
+						return false
+					end
+				end
+			end
+
+			ProximityPrompt = p84.Parent
+
+			if ProximityPrompt then
+			elseif ProximityPrompt then
+				ProximityPrompt.HoldDuration = 0
+				ProximityPrompt.RequiresLineOfSight = false
+				fireproximityprompt(ProximityPrompt)
+
+				return true
+			else
+				v580 = p84.FindFirstChildWhichIsA(p84, "ClickDetector", true)
+
+				if v580 then
+					fireclickdetector(v580)
+
+					return true
+				else
+					return false
+				end
+			end
+
+			ProximityPrompt = p84.Parent:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+			if ProximityPrompt then
+				ProximityPrompt.HoldDuration = 0
+				ProximityPrompt.RequiresLineOfSight = false
+				fireproximityprompt(ProximityPrompt)
+
+				return true
+			else
+				v580 = p84.FindFirstChildWhichIsA(p84, "ClickDetector", true)
+
+				if v580 then
+					fireclickdetector(v580)
+
+					return true
+				else
+					return false
+				end
+			end
+		end
+
+		t3.value105 = 5
+		t3.value106 = 0
+		t3.value107 = {}
+		t3.value108 = 0
+
+		local function v581()
+			local now = os.clock()
+
+			for k, v in pairs(t3.value107) do
+				if k:IsDescendantOf(workspace) then
+					if now - v > 2 then
+						t3.value107[k] = nil
+					end
+				else
+					local v585 = t3
+
+					v585.value106 = v585.value106 + 1
+					t3.value107[k] = nil
+				end
+			end
+		end
+		local function v586(p85)
+			local n8 = 0
+			local Backpack = t3.value85:FindFirstChild("Backpack")
+
+			if Backpack then
+				local GetChildren = Backpack.GetChildren
+
+				for _, v in ipairs(GetChildren(Backpack)) do
+					if v:IsA("Tool") then
+						n8 = n8 + 1
+					end
+				end
+			end
+
+			if not p85 then
+				return n8
+			end
+
+			for _, child in ipairs(p85.GetChildren(p85)) do
+				if child:IsA("Tool") then
+					n8 = n8 + 1
+				end
+			end
+
+			return n8
+		end
+		local function v594(p86)
+			local ipairs_ = ipairs
+			local workspace_ = workspace
+			local huge = math.huge
+			local v598 = nil
+
+			for _, descendant in ipairs_(workspace_.GetDescendants(workspace_)) do
+				local v601 = descendant.Name == "ScrapMachine"
+
+				if v601 then
+					v601 = descendant:IsA("Model") or descendant:IsA("BasePart")
+				end
+
+				if v601 then
+					local isModel = descendant:IsA("Model")
+
+					if isModel then
+						isModel = descendant:GetPivot().Position
+					end
+
+					ipairs_ = ((isModel or descendant.Position) - p86).Magnitude
+
+					if ipairs_ < huge then
+						v598 = descendant
+						huge = ipairs_
+						ipairs_ = v598
+
+						local v603 = v598
+
+						v598 = ipairs_
+						v603 = ipairs_
+					end
+				end
+			end
+
+			return v598
+		end
+		local function v604(p87)
+			local Parent = p87.Parent
+
+			while true do
+				local v606
+
+				if Parent then
+					v606 = Parent ~= workspace
+				else
+					v606 = Parent
+				end
+
+				if not v606 then
+					return nil
+				end
+
+				if Parent:IsA("BasePart") then
+					return Parent
+				end
+
+				Parent = Parent.Parent
+			end
+		end
+		local function v607(p88)
+			if p88 then
+				local GetDescendants = p88.GetDescendants
+				local v609 = nil
+				local v610 = nil
+
+				for _, v in ipairs(GetDescendants(p88)) do
+					local isProximityPrompt = v:IsA("ProximityPrompt")
+
+					if isProximityPrompt then
+						isProximityPrompt = v.Enabled
+					end
+
+					if isProximityPrompt then
+						local v614 = v604(v)
+
+						if v614 then
+							return v, v614
+						end
+					end
+				end
+
+				return v609, v610
+			else
+				return nil
+			end
+		end
+		local function v615(p89, _)
+			local v616 = v607(p89)
+
+			if not (v616 and v616.Parent) then
+				v489("Sell prompt not found")
+
+				return false
+			end
+
+			v616.HoldDuration = 0
+			v616.RequiresLineOfSight = false
+
+			for _ = 1, 2 do
+				if not (t3.value90 and v616.Parent) then
+					return true
+				end
+
+				if not pcall(function()
+					fireproximityprompt(v616)
+				end) then
+					v489("Failed to activate Sell prompt")
+
+					return false
+				end
+
+				task.wait(0.5)
+			end
+
+			return true
+		end
+		local function v618(p90, p91, p92)
+			local v619 = v594(p90.Position)
+
+			if v619 then
+				local v620, v621 = v607(v619)
+
+				if v620 and v621 then
+					v489("Sell prompt found - Moving to the machine")
+
+					local v622 = v621.Position + Vector3.new(0, 3 + t3.value92, 0)
+
+					v493(p92)
+					t3.value98(p90, v622, t3.value91)
+
+					if not t3.value90 or p91.Health <= 0 then
+						return false
+					else
+						local Magnitude = (p90.Position - v621.Position).Magnitude
+
+						v489("Distance to Sell prompt: " .. math.floor(Magnitude))
+
+						if v620.MaxActivationDistance < Magnitude then
+							v489("Not close enough to the Sell prompt")
+
+							return false
+						else
+							task.wait(0.3)
+
+							if v615(v619, p90) then
+								v489("ScrapMachine activated")
+								task.wait(1)
+
+								return true
+							else
+								return false
+							end
+						end
+					end
+				else
+					v489("No Sell prompt found on the machine")
+
+					return false
+				end
+			else
+				v489("ScrapMachine not found")
+
+				return false
+			end
+		end
+
+		v297.Toggle(v297, {
+			Title = "Auto Farm Coins (Beta)",
+			Desc = "Automatically collect Scraps and sell them once the target amount is reached",
+			Value = false,
+			Callback = function(p93)
+				t3.value90 = p93
+				v489("Auto Farm Coins: " .. (p93 and "ON" or p93 or "OFF"))
+
+				if not p93 then
+					return
+				end
+
+				t3.value101(true)
+				t3.value106 = 0
+				t3.value107 = {}
+				t3.value108 = 0
+				task.spawn(function()
+					while true do
+						local value90 = t3.value90
+
+						if value90 then
+							value90 = t3.value8.Parent
+						end
+
+						if not value90 then
+							break
+						end
+
+						local Character = t3.value85.Character
+						local HumanoidRootPart
+
+						if Character then
+							HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+						else
+							HumanoidRootPart = Character
+						end
+
+						local Humanoid
+
+						if Character then
+							Humanoid = Character:FindFirstChildOfClass("Humanoid")
+						else
+							Humanoid = Character
+						end
+
+						local v628
+
+						if HumanoidRootPart then
+							if Humanoid then
+								v628 = Humanoid.Health > 0
+							else
+								v628 = Humanoid
+							end
+						else
+							v628 = HumanoidRootPart
+						end
+
+						if v628 then
+							v581()
+
+							local v629
+
+							if os.clock() >= t3.value108 then
+								local value106 = t3.value106
+								local v633 = v586(Character)
+
+								v629 = math.max(value106, v633) >= t3.value105
+							else
+								v629 = false
+							end
+
+							if v629 then
+								v489("Scrap target reached - Moving to sell")
+
+								if v618(HumanoidRootPart, Humanoid, Character) then
+									t3.value106 = 0
+									t3.value107 = {}
+									task.wait(1)
+
+									local LocalPlayer2 = t3.value84.LocalPlayer
+
+									if LocalPlayer2.Character then
+										LocalPlayer2.Character:BreakJoints()
+									end
+
+									task.wait(2)
+
+									local v634 = false
+
+									for _, descendant in ipairs(game:GetDescendants()) do
+										local isClickDetector = descendant:IsA("ClickDetector")
+
+										if isClickDetector then
+											isClickDetector = descendant.Parent
+
+											if isClickDetector then
+												isClickDetector = descendant.Parent.Name == "QuickPlay"
+											end
+										end
+
+										if isClickDetector and pcall(function()
+											fireclickdetector(descendant)
+										end) then
+											v489("QuickPlay activated!")
+											v634 = true
+
+											break
+										end
+									end
+
+									if not v634 then
+										v489("QuickPlay ClickDetector not found")
+									end
+
+									task.wait(1)
+								else
+									t3.value108 = os.clock() + 15
+								end
+							else
+								local v637 = v493(Character)
+								local v638, v639 = t3.value102(HumanoidRootPart, v637)
+
+								if v638 then
+									local v640, v641 = t3.value103(HumanoidRootPart, Humanoid, v638.Position, v639, v637)
+
+									if v640 then
+										local ok, result = pcall(v578, v638)
+
+										if ok and result then
+											t3.value107[v638] = os.clock()
+										else
+											v489("Failed to collect " .. v638.Name)
+										end
+
+										t3.value93[v638] = os.clock() + 3
+									elseif v641 == "No path found" and true or string.find(tostring(v641), "No path found") then
+										v489("No path found - Starting safe orbit")
+										t3.value93[v638] = os.clock() + 20
+										t3.value104(HumanoidRootPart, Humanoid, v637)
+									else
+										if v641 ~= "Stopped" then
+											v489("Skipping " .. v638.Name .. ": " .. tostring(v641))
+										end
+
+										t3.value93[v638] = os.clock() + 20
+									end
+								else
+									v489("No Scrap items available")
+									task.wait(0.5)
+								end
+							end
+						else
+							task.wait(0.5)
+						end
+
+						task.wait()
+					end
+
+					local Character = t3.value85.Character
+
+					if Character then
+						Character = Character:FindFirstChild("HumanoidRootPart")
+					end
+
+					if not Character then
+						return
+					end
+
+					Character.AssemblyLinearVelocity = Vector3.zero
+				end)
+			end
+		})
+		t3.value109 = true
+		t3.value85.Idled:Connect(function()
+			if not t3.value109 then
+				return
+			end
+
+			local function v645()
+				VirtualUser:CaptureController()
+				VirtualUser:ClickButton2(unpack_({ Vector2.new(0, 0) }))
+			end
+
+			pcall(v645)
+		end)
+		v301.Toggle(v301, {
+			Title = "Anti AFK",
+			Desc = "Prevent being kicked for inactivity",
+			Value = true,
+			Callback = function(p94)
+				t3.value109 = p94
+			end
+		})
+		t3.value110 = game:GetService("Lighting")
+		t3.value111 = false
+		t3.value112 = {}
+
+		local function v646(p95)
+			t3.value111 = p95
+
+			if p95 then
+				t3.value112 = {
+					Brightness = t3.value110.Brightness,
+					ClockTime = t3.value110.ClockTime,
+					FogEnd = t3.value110.FogEnd,
+					GlobalShadows = t3.value110.GlobalShadows,
+					Ambient = t3.value110.Ambient,
+					OutdoorAmbient = t3.value110.OutdoorAmbient
+				}
+				t3.value110.Brightness = 3
+				t3.value110.ClockTime = 14
+				t3.value110.FogEnd = 100000
+				t3.value110.GlobalShadows = false
+				t3.value110.Ambient = Color3.fromRGB(255, 255, 255)
+				t3.value110.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+			else
+				for k, v in pairs(t3.value112) do
+					t3.value110[k] = v
+				end
+			end
+		end
+
+		v301.Toggle(v301, {
+			Title = "Full Bright",
+			Desc = "Removes darkness and improves visibility",
+			Value = false,
+			Callback = function(p96)
+				v646(p96)
+			end
+		})
+		t3.value113 = false
+		t3.value114 = 100
+		t3.value115 = nil
+		t3.value116 = nil
+		t3.value117 = nil
+
+		local function v649(p97)
+			t3.value113 = p97
+
+			if t3.value115 then
+				t3.value115:Disconnect()
+			end
+
+			if p97 then
+				t3.value69.RenderStepped:Connect(function()
+					local Character = t3.value85.Character
+
+					if Character then
+						Character = Character:FindFirstChildOfClass("Humanoid")
+					end
+
+					if not Character then
+						return
+					end
+
+					if t3.value116 ~= Character then
+						local _ = Character.WalkSpeed
+					end
+
+					Character.WalkSpeed = t3.value114
+				end)
+
+				return
+			end
+
+			local Parent = t3.value116 and t3.value116.Parent
+
+			if Parent then
+				Parent = t3.value117
+			end
+
+			if not Parent then
+				t3.value116 = nil
+
+				return
+			end
+
+			t3.value116.WalkSpeed = t3.value117
+			t3.value116 = nil
+		end
+
+		v301.Toggle(v301, {
+			Title = "Walk Speed",
+			Desc = "Increases your character movement speed",
+			Value = false,
+			Callback = function(p98)
+				v649(p98)
+			end
+		})
+		t3.value118 = false
+		t3.value119 = {}
+
+		function t3.value120(p99)
+			local Parent = p99.Parent
+
+			for _ = 1, 5 do
+				if not Parent then
+					return false
+				end
+
+				local v655 = string.lower(Parent.Name)
+
+				if string.find(v655, "scrap") or string.find(v655, "button") then
+					return true
+				end
+
+				Parent = Parent.Parent
+			end
+
+			return false
+		end
+
+		local function v656()
+			local ipairs_ = ipairs
+			local workspace_ = workspace
+
+			for _, descendant in ipairs_(workspace_.GetDescendants(workspace_)) do
+				local isProximityPrompt = descendant:IsA("ProximityPrompt")
+
+				if isProximityPrompt then
+					isProximityPrompt = t3.value120(descendant)
+				end
+
+				if isProximityPrompt then
+					if t3.value119[descendant] == nil then
+						t3.value119[descendant] = descendant.HoldDuration
+					end
+
+					descendant.HoldDuration = 0
+				end
+			end
+		end
+
+		v301.Toggle(v301, {
+			Title = "Fast Interact",
+			Desc = "Faster interaction with Scraps and Buttons",
+			Value = false,
+			Callback = function(p100)
+				t3.value118 = p100
+
+				if p100 then
+					v656()
+				else
+					for k, v in pairs(t3.value119) do
+						local Parent
+
+						if k then
+							Parent = k.Parent
+						else
+							Parent = k
+						end
+
+						if Parent then
+							k.HoldDuration = v
+						end
+					end
+				end
+			end
+		})
+		t3.value121 = t3.value84.LocalPlayer
+		t3.value122 = {
+			CameraMode = t3.value121.CameraMode,
+			CameraMinZoomDistance = t3.value121.CameraMinZoomDistance,
+			CameraMaxZoomDistance = t3.value121.CameraMaxZoomDistance
+		}
+		v301.Toggle(v301, {
+			Title = "Third Person",
+			Desc = "Unlock third person camera view",
+			Value = false,
+			Callback = function(p101)
+				if p101 then
+					t3.value121.CameraMode = Enum.CameraMode.Classic
+					t3.value121.CameraMinZoomDistance = 0.5
+					t3.value121.CameraMaxZoomDistance = 20
+				else
+					t3.value121.CameraMode = t3.value122.CameraMode
+					t3.value121.CameraMinZoomDistance = t3.value122.CameraMinZoomDistance
+					t3.value121.CameraMaxZoomDistance = t3.value122.CameraMaxZoomDistance
+				end
+			end
+		})
+		v301:Slider({
+			Title = "Walk Speed Amount",
+			Desc = "Adjust your movement speed (16 - 300)",
+			Value = {
+				Min = 16,
+				Max = 300,
+				Default = 100
+			},
+			Step = 5,
+			Callback = function(p102)
+				t3.value114 = p102
+			end
+		})
+		v301.Slider(v301, {
+			Title = "Fly Speed",
+			Desc = "Adjust flying speed",
+			Value = {
+				Min = 10,
+				Max = 150,
+				Default = 50
+			},
+			Step = 5,
+			Callback = function(p103)
+				t3.value71 = p103
+			end
+		})
+		v301.Slider(v301, {
+			Title = "Tween Speed",
+			Desc = "Movement speed during Auto Collect (studs per second)",
+			Value = {
+				Min = 16,
+				Max = 300,
+				Default = 100
+			},
+			Step = 10,
+			Callback = function(p104)
+				t3.value91 = p104
+			end
+		})
+		v301.Slider(v301, {
+			Title = "Hover Height",
+			Desc = "Raises the character during tween movement to avoid walls and floor edges",
+			Value = {
+				Min = 0,
+				Max = 6,
+				Default = 3
+			},
+			Step = 1,
+			Callback = function(p105)
+				t3.value92 = p105
+			end
+		})
+		v301.Slider(v301, {
+			Title = "Sell After",
+			Desc = "Number of Scrap items to collect before moving to the ScrapMachine",
+			Value = {
+				Min = 1,
+				Max = 20,
+				Default = 5
+			},
+			Step = 1,
+			Callback = function(p106)
+				t3.value105 = p106
+			end
+		})
+		t3.value123 = game:GetService("HttpService")
+		v301.Button(v301, {
+			Title = "Save Config",
+			Desc = "Save your current FTS HUB settings",
+			Callback = function()
+				local t20 = {
+					SellThreshold = t3.value105,
+					AutoCollect = t3.value90,
+					WalkSpeed = t3.value114,
+					FlySpeed = t3.value71,
+					TweenSpeed = t3.value91,
+					HoverHeight = t3.value92,
+					AntiAFK = t3.value109,
+					FullBright = t3.value111,
+					WalkSpeedEnabled = t3.value113,
+					FastInteract = t3.value118
+				}
+
+				local function v666()
+					if isfolder("FTS HUB") then
+						writefile("FTS HUB/config.json", t3.value123:JSONEncode(t20))
+
+						return
+					end
+
+					makefolder("FTS HUB")
+					writefile("FTS HUB/config.json", t3.value123:JSONEncode(t20))
+				end
+
+				local ok, result = pcall(v666)
+
+				if ok then
+					print("[FTS HUB] Config saved successfully!")
+					game:GetService("StarterGui"):SetCore("SendNotification", {
+						Title = "FTS",
+						Text = "Config saved successfully!",
+						Duration = 3
+					})
+				else
+					warn("[FTS HUB] Save Config Error:", result)
+				end
+			end
+		})
+		v301.Button(v301, {
+			Title = "Reset Config",
+			Desc = "Delete saved FTS HUB configuration",
+			Callback = function()
+				local ok, result = pcall(function()
+					local s6 = "FTS HUB/config.json"
+
+					if not isfile(s6) then
+						return
+					end
+
+					delfile(s6)
+				end)
+
+				if ok then
+					print("[FTS HUB] Config reset successfully!")
+					game:GetService("StarterGui"):SetCore("SendNotification", {
+						Title = "FTS",
+						Text = "Saved config has been reset!",
+						Duration = 3
+					})
+				else
+					warn("[FTS HUB] Reset Config Error:", result)
+				end
+			end
+		})
+		t3.value47("Main")
+	end) }
+
+t1.value4 = t2[2]
+
+if t2[1] then
+	return
+end
+
+local warn_ = warn
+local value4 = t1.value4
+
+warn_("[FTS ERROR] " .. tostring(value4))
+pcall(function()
+	local StarterGui2 = game:GetService("StarterGui")
+	local SetCore = StarterGui2.SetCore
+	local value42 = t1.value4
+
+	SetCore(StarterGui2, "SendNotification", {
+		Title = "FTS ERROR",
+		Text = tostring(value42),
+		Duration = 15
+	})
+end)
