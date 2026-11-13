@@ -24,12 +24,12 @@ local function geniter(f, s, c)
 	end
 end
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/scriptpastebin/Blox-Fruits/refs/heads/main/core.luau"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/daykits/baneno-hub-bf/refs/heads/main/lib%20koko"))()
 
 local lib = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local v5 = lib:CreateWindow({
-	Title = "AIhoi Hub",
-	SubTitle = "V1 by deobt",
+	Title = "bfnokey V1",
+	SubTitle = "by daykits",
 	TabWidth = 160,
 	Size = UDim2.fromOffset(580, 460),
 	Acrylic = true,
