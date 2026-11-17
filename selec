@@ -18,14 +18,14 @@ local scripts = {
     {
         name = "topi hub",
         desc = "ĐÃ AUDATE",
-        icon = "⚡",
+        icon = "🔥",
         color = Color3.fromRGB(102, 126, 234),
         url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykitstopi",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
     {
         name = "moon prime",
         desc = "ĐÃ AUDATE",
-        icon = "🎯",
+        icon = "🔥",
         color = Color3.fromRGB(240, 147, 251),
         url  = "https://raw.githubusercontent.com/daykits/baneno-hub-bf/refs/heads/main/moon%20prime",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
@@ -37,9 +37,23 @@ local scripts = {
         url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykits_banana",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
     {
+        name = "winnex hub",
+        desc = "ĐÃ AUDATE",
+        icon = "🔥",
+        color = Color3.fromRGB(255, 159, 67),
+        url  = "https://raw.githubusercontent.com/daykits/luoiqua/refs/heads/main/winnex_hub",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
+    },
+    {
+        name = "bacon hub",
+        desc = "ĐÃ AUDATE",
+        icon = "🔥",
+        color = Color3.fromRGB(255, 159, 67),
+        url  = "https://raw.githubusercontent.com/daykits/baneno-hub-bf/refs/heads/main/bacon.hub",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
+    },
+    {
         name = "night hop",
         desc = "ĐÃ AUDATE",
-        icon = "🚀",
+        icon = "🔥",
         color = Color3.fromRGB(0, 210, 255),
         url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/night%20cracked",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
