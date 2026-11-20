@@ -1,11 +1,3 @@
--- ============================================
--- MENU SCRIPT HUB PRO — 4 slot + Settings
--- - Viền ngoài trong suốt (outer stroke transparency)
--- - Chỉnh màu accent + màu từng slot
--- - Chỉnh độ trong suốt viền, nền, blur
--- - Lưu cấu hình bằng writefile/readfile (nếu executor hỗ trợ)
--- ============================================
-
 local GUI_NAME = "ScriptMenuHubPro"
 if game.CoreGui:FindFirstChild(GUI_NAME) then
     game.CoreGui[GUI_NAME]:Destroy()
@@ -20,7 +12,7 @@ local scripts = {
         desc = "ĐÃ AUDATE",
         icon = "🔥",
         color = Color3.fromRGB(102, 126, 234),
-        url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykitstopi",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
+        url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykitstopi.lua",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
     {
         name = "moon prime",
@@ -34,7 +26,7 @@ local scripts = {
         desc = "ĐÃ AUDATE",
         icon = "🔥",
         color = Color3.fromRGB(255, 159, 67),
-        url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykits_banana",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
+        url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/daykits_banana.lua",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
     {
         name = "winnex hub",
@@ -55,7 +47,7 @@ local scripts = {
         desc = "ĐÃ AUDATE",
         icon = "🔥",
         color = Color3.fromRGB(0, 210, 255),
-        url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/night%20cracked",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
+        url  = "https://raw.githubusercontent.com/daykits/roblox-scripts/refs/heads/main/hopboss.lua",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
 }
 
