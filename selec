@@ -19,7 +19,7 @@ local scripts = {
         desc = "ĐÃ AUDATE",
         icon = "🔥",
         color = Color3.fromRGB(240, 147, 251),
-        url  = "https://raw.githubusercontent.com/daykits/baneno-hub-bf/refs/heads/main/moon%20prime",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
+        url  = "https://raw.githubusercontent.com/daykits/baneno-hub-bf/refs/heads/main/moon-prime.lua",   -- <-- DÁN HTTP CỦA BẠN VÀO ĐÂY
     },
     {
         name = "banana",
